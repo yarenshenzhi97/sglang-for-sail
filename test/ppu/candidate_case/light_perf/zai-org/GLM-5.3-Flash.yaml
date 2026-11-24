@@ -1,0 +1,830 @@
+schema_version: ppu-serving/v1
+ppu:
+  framework: sglang
+  visibility: candidate
+model:
+  model_id: GLM-5.3-Flash
+light_performance_cases:
+- id: glm_5_3_flash_bf16_tp_prefill
+  ppu:
+    assets:
+      model: MODEL_PATH_BF16
+      tokenizer: MODEL_PATH_BF16
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: 810E (btv1.1)
+  model:
+    base_args:
+    - --trust-remote-code
+    - --tp-size
+    - '16'
+    - --attention-backend
+    - dsa
+    - --dsa-prefill-backend
+    - flashmla_sparse
+    - --dsa-decode-backend
+    - flashmla_sparse
+    - --enable-prefill-cp
+    - --cp-strategy
+    - interleave
+    - --attn-cp-size
+    - '16'
+    - --disable-radix-cache
+    - --disable-cuda-graph
+    - --mem-fraction-static
+    - '0.75'
+    - --disable-shared-experts-fusion
+    - --disable-custom-all-reduce
+    base_env: {}
+  variants:
+    default:
+      precision: bf16
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: prefill
+    input:
+      batch_size: 1
+      input_len:
+      - 4096
+      - 16384
+      - 65536
+      - 102400
+      output_len: 1
+    run_name: glm_5_3_flash_bf16_tp_prefill
+  source: glm-5.3-flash-cases.md:416
+- id: glm_5_3_flash_bf16_tp_decode
+  ppu:
+    assets:
+      model: MODEL_PATH_BF16
+      tokenizer: MODEL_PATH_BF16
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: 2x 810E (btv1.1)
+  model:
+    base_args:
+    - --trust-remote-code
+    - --tp-size
+    - '16'
+    - --attention-backend
+    - dsa
+    - --dsa-prefill-backend
+    - flashmla_sparse
+    - --dsa-decode-backend
+    - flashmla_sparse
+    - --enable-prefill-cp
+    - --cp-strategy
+    - interleave
+    - --attn-cp-size
+    - '16'
+    - --disable-radix-cache
+    - --disable-cuda-graph
+    - --mem-fraction-static
+    - '0.5'
+    - --disable-shared-experts-fusion
+    - --disable-custom-all-reduce
+    base_env: {}
+  variants:
+    default:
+      precision: bf16
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: decode
+    input:
+      batch_size: 16
+      input_len:
+      - 4096
+      output_len: 1536
+    run_name: glm_5_3_flash_bf16_tp_decode
+  source: glm-5.3-flash-cases.md:440
+- id: glm_5_3_flash_w8a8_int8_tp_prefill
+  ppu:
+    assets:
+      model: MODEL_PATH_W8A8_INT8
+      tokenizer: MODEL_PATH_W8A8_INT8
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: 2x 810E (btv1.1)
+  model:
+    base_args:
+    - --trust-remote-code
+    - --tp-size
+    - '16'
+    - --mem-fraction-static
+    - '0.5'
+    - --quantization
+    - w8a8_int8
+    - --attention-backend
+    - dsa
+    - --dsa-prefill-backend
+    - flashmla_sparse
+    - --dsa-decode-backend
+    - flashmla_kv
+    - --disable-prefill-cuda-graph
+    - --disable-shared-experts-fusion
+    - --disable-custom-all-reduce
+    base_env: {}
+  variants:
+    default:
+      precision: w8a8-int8
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: prefill
+    input:
+      batch_size: 1
+      input_len:
+      - 4096
+      - 16384
+      - 65536
+      - 102400
+      output_len: 1
+    run_name: glm_5_3_flash_w8a8_int8_tp_prefill
+  source: glm-5.3-flash-cases.md:470
+- id: glm_5_3_flash_w8a8_int8_tp_decode
+  ppu:
+    assets:
+      model: MODEL_PATH_W8A8_INT8
+      tokenizer: MODEL_PATH_W8A8_INT8
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: 2x 810E (btv1.1)
+  model:
+    base_args:
+    - --trust-remote-code
+    - --tp-size
+    - '16'
+    - --mem-fraction-static
+    - '0.3'
+    - --quantization
+    - w8a8_int8
+    - --attention-backend
+    - dsa
+    - --dsa-prefill-backend
+    - flashmla_sparse
+    - --dsa-decode-backend
+    - flashmla_kv
+    - --disable-prefill-cuda-graph
+    - --disable-shared-experts-fusion
+    - --disable-custom-all-reduce
+    base_env: {}
+  variants:
+    default:
+      precision: w8a8-int8
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: decode
+    input:
+      batch_size: 16
+      input_len:
+      - 4096
+      output_len: 1536
+    run_name: glm_5_3_flash_w8a8_int8_tp_decode
+  source: glm-5.3-flash-cases.md:491
+- id: glm_5_3_flash_w8a8_int8_ep_prefill
+  ppu:
+    assets:
+      model: MODEL_PATH_W8A8_INT8
+      tokenizer: MODEL_PATH_W8A8_INT8
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: 2x 810E (btv1.1)
+  model:
+    base_args:
+    - --trust-remote-code
+    - --tp-size
+    - '16'
+    - --ep-size
+    - '16'
+    - --mem-fraction-static
+    - '0.5'
+    - --quantization
+    - w8a8_int8
+    - --attention-backend
+    - dsa
+    - --dsa-prefill-backend
+    - flashmla_sparse
+    - --dsa-decode-backend
+    - flashmla_kv
+    - --disable-cuda-graph
+    - --disable-prefill-cuda-graph
+    - --disable-shared-experts-fusion
+    - --disable-custom-all-reduce
+    - --moe-a2a-backend
+    - deepep
+    - --deepep-mode
+    - auto
+    base_env: {}
+  variants:
+    default:
+      precision: w8a8-int8
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: prefill
+    input:
+      batch_size: 1
+      input_len:
+      - 4096
+      - 16384
+      - 65536
+      - 102400
+      output_len: 1
+    run_name: glm_5_3_flash_w8a8_int8_ep_prefill
+  source: glm-5.3-flash-cases.md:516
+- id: glm_5_3_flash_w8a8_int8_ep_decode
+  ppu:
+    assets:
+      model: MODEL_PATH_W8A8_INT8
+      tokenizer: MODEL_PATH_W8A8_INT8
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: 2x 810E (btv1.1)
+  model:
+    base_args:
+    - --trust-remote-code
+    - --tp-size
+    - '16'
+    - --ep-size
+    - '16'
+    - --mem-fraction-static
+    - '0.4'
+    - --quantization
+    - w8a8_int8
+    - --attention-backend
+    - dsa
+    - --dsa-prefill-backend
+    - flashmla_sparse
+    - --dsa-decode-backend
+    - flashmla_kv
+    - --disable-prefill-cuda-graph
+    - --disable-shared-experts-fusion
+    - --disable-custom-all-reduce
+    - --moe-a2a-backend
+    - deepep
+    - --deepep-mode
+    - auto
+    base_env: {}
+  variants:
+    default:
+      precision: w8a8-int8
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: decode
+    input:
+      batch_size: 16
+      input_len:
+      - 4096
+      output_len: 1536
+    run_name: glm_5_3_flash_w8a8_int8_ep_decode
+  source: glm-5.3-flash-cases.md:541
+- id: glm_5_3_flash_w4a8_int8_tp_prefill
+  ppu:
+    assets:
+      model: MODEL_PATH_W4A8_INT8
+      tokenizer: MODEL_PATH_W4A8_INT8
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: 2x 810E (btv1.1)
+  model:
+    base_args:
+    - --trust-remote-code
+    - --tp-size
+    - '8'
+    - --attention-backend
+    - nsa
+    - --dsa-prefill-backend
+    - flashmla_sparse
+    - --dsa-decode-backend
+    - flashmla_sparse
+    - --dsa-decode-backend
+    - flashmla_sparse
+    - --mem-fraction-static
+    - '0.5'
+    - --disable-shared-experts-fusion
+    - --disable-custom-all-reduce
+    base_env: {}
+  variants:
+    default:
+      precision: w4a8-int8
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: prefill
+    input:
+      batch_size: 1
+      input_len:
+      - 4096
+      - 16384
+      - 65536
+      - 102400
+      output_len: 1
+    run_name: glm_5_3_flash_w4a8_int8_tp_prefill
+  source: glm-5.3-flash-cases.md:571
+- id: glm_5_3_flash_w4a8_int8_tp_decode
+  ppu:
+    assets:
+      model: MODEL_PATH_W4A8_INT8
+      tokenizer: MODEL_PATH_W4A8_INT8
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: 2x 810E (btv1.1)
+  model:
+    base_args:
+    - --trust-remote-code
+    - --tp-size
+    - '8'
+    - --attention-backend
+    - nsa
+    - --dsa-prefill-backend
+    - flashmla_sparse
+    - --dsa-decode-backend
+    - flashmla_sparse
+    - --dsa-decode-backend
+    - flashmla_sparse
+    - --mem-fraction-static
+    - '0.3'
+    - --disable-shared-experts-fusion
+    - --disable-custom-all-reduce
+    base_env: {}
+  variants:
+    default:
+      precision: w4a8-int8
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: decode
+    input:
+      batch_size: 16
+      input_len:
+      - 4096
+      output_len: 1536
+    run_name: glm_5_3_flash_w4a8_int8_tp_decode
+  source: glm-5.3-flash-cases.md:591
+- id: glm_5_3_flash_fp8_tp_prefill
+  ppu:
+    assets:
+      model: MODEL_PATH_FP8
+      tokenizer: MODEL_PATH_FP8
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: 890P (btv1.5)
+  model:
+    base_args:
+    - --trust-remote-code
+    - --tp-size
+    - '8'
+    - --mem-fraction-static
+    - '0.75'
+    - --disable-shared-experts-fusion
+    - --disable-custom-all-reduce
+    - --prefill-attention-backend
+    - nsa
+    - --decode-attention-backend
+    - dsa
+    - --dsa-decode-backend
+    - flashmla_sparse
+    - --cuda-graph-backend-prefill
+    - disabled
+    - --max-total-tokens
+    - '106496'
+    base_env: {}
+  variants:
+    default:
+      precision: fp8
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: prefill
+    input:
+      batch_size: 1
+      input_len:
+      - 4096
+      - 16384
+      - 65536
+      - 102400
+      output_len: 1
+    run_name: glm_5_3_flash_fp8_tp_prefill
+  source: glm-5.3-flash-cases.md:981
+- id: glm_5_3_flash_fp8_tp_decode
+  ppu:
+    assets:
+      model: MODEL_PATH_FP8
+      tokenizer: MODEL_PATH_FP8
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: "3 890P\uFF08btv1.5\uFF09"
+  model:
+    base_args:
+    - --trust-remote-code
+    - --tp-size
+    - '8'
+    - --mem-fraction-static
+    - '0.75'
+    - --disable-shared-experts-fusion
+    - --disable-custom-all-reduce
+    - --prefill-attention-backend
+    - nsa
+    - --decode-attention-backend
+    - dsa
+    - --dsa-decode-backend
+    - flashmla_sparse
+    - --cuda-graph-backend-prefill
+    - disabled
+    - --disable-radix-cache
+    - --chunked-prefill-size
+    - '8192'
+    - --cuda-graph-max-bs-decode
+    - '64'
+    - --max-total-tokens
+    - '360448'
+    base_env: {}
+  variants:
+    default:
+      precision: fp8
+  benchmark:
+    engine: sglang.benchmark.one_batch_server
+    workload: decode
+    input:
+      batch_size: 64
+      input_len:
+      - 4096
+      output_len: 1536
+    run_name: glm_5_3_flash_fp8_tp_decode
+    dataset:
+      name: random-ids
+  source: glm-5.3-flash-cases.md:1002
+- id: glm_5_3_flash_fp8_channel_tp_prefill
+  ppu:
+    assets:
+      model: MODEL_PATH_FP8_CHANNEL
+      tokenizer: MODEL_PATH_FP8_CHANNEL
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: "3 890P\uFF08btv1.5\uFF09"
+  model:
+    base_args:
+    - --trust-remote-code
+    - --tp-size
+    - '8'
+    - --attention-backend
+    - dsa
+    - --dsa-prefill-backend
+    - flashmla_sparse
+    - --dsa-decode-backend
+    - tilelang
+    - --mem-fraction-static
+    - '0.9'
+    - --max-total-tokens
+    - '106496'
+    base_env: {}
+  variants:
+    default:
+      precision: fp8-channel
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: prefill
+    input:
+      batch_size: 1
+      input_len:
+      - 4096
+      - 16384
+      - 65536
+      - 102400
+      output_len: 1
+    run_name: glm_5_3_flash_fp8_channel_tp_prefill
+  source: glm-5.3-flash-cases.md:1033
+- id: glm_5_3_flash_fp8_channel_tp_decode
+  ppu:
+    assets:
+      model: MODEL_PATH_FP8_CHANNEL
+      tokenizer: MODEL_PATH_FP8_CHANNEL
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: "3 890P\uFF08btv1.5\uFF09"
+  model:
+    base_args:
+    - --trust-remote-code
+    - --tp-size
+    - '8'
+    - --attention-backend
+    - dsa
+    - --dsa-prefill-backend
+    - flashmla_sparse
+    - --dsa-decode-backend
+    - tilelang
+    - --mem-fraction-static
+    - '0.9'
+    - --disable-radix-cache
+    - --chunked-prefill-size
+    - '8192'
+    - --cuda-graph-max-bs-decode
+    - '64'
+    - --max-total-tokens
+    - '360448'
+    base_env: {}
+  variants:
+    default:
+      precision: fp8-channel
+  benchmark:
+    engine: sglang.benchmark.one_batch_server
+    workload: decode
+    input:
+      batch_size: 64
+      input_len:
+      - 4096
+      output_len: 1536
+    run_name: glm_5_3_flash_fp8_channel_tp_decode
+    dataset:
+      name: random-ids
+  source: glm-5.3-flash-cases.md:1051
+- id: glm_5_3_flash_fp8_channel_ep_prefill
+  ppu:
+    assets:
+      model: MODEL_PATH_FP8_CHANNEL
+      tokenizer: MODEL_PATH_FP8_CHANNEL
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: "3 890P\uFF08btv1.5\uFF09"
+  model:
+    base_args:
+    - --trust-remote-code
+    - --tp-size
+    - '8'
+    - --ep-size
+    - '8'
+    - --moe-a2a-backend
+    - deepep
+    - --attention-backend
+    - dsa
+    - --dsa-prefill-backend
+    - flashmla_sparse
+    - --dsa-decode-backend
+    - flashmla_sparse
+    - --mem-fraction-static
+    - '0.9'
+    - --disable-shared-experts-fusion
+    - --disable-custom-all-reduce
+    - --max-total-tokens
+    - '106496'
+    - --disable-cuda-graph
+    base_env: {}
+  variants:
+    default:
+      precision: fp8-channel
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: prefill
+    input:
+      batch_size: 1
+      input_len:
+      - 4096
+      - 16384
+      - 65536
+      - 102400
+      output_len: 1
+    run_name: glm_5_3_flash_fp8_channel_ep_prefill
+  source: glm-5.3-flash-cases.md:1077
+- id: glm_5_3_flash_fp8_channel_ep_decode
+  ppu:
+    assets:
+      model: MODEL_PATH_FP8_CHANNEL
+      tokenizer: MODEL_PATH_FP8_CHANNEL
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: "3 890P\uFF08btv1.5\uFF09"
+  model:
+    base_args:
+    - --trust-remote-code
+    - --tp-size
+    - '8'
+    - --ep-size
+    - '8'
+    - --moe-a2a-backend
+    - deepep
+    - --attention-backend
+    - dsa
+    - --dsa-prefill-backend
+    - flashmla_sparse
+    - --dsa-decode-backend
+    - flashmla_sparse
+    - --mem-fraction-static
+    - '0.9'
+    - --disable-shared-experts-fusion
+    - --disable-custom-all-reduce
+    - --disable-radix-cache
+    - --chunked-prefill-size
+    - '8192'
+    - --cuda-graph-max-bs-decode
+    - '128'
+    - --max-total-tokens
+    - '720896'
+    base_env: {}
+  variants:
+    default:
+      precision: fp8-channel
+  benchmark:
+    engine: sglang.benchmark.one_batch_server
+    workload: decode
+    input:
+      batch_size: 128
+      input_len:
+      - 4096
+      output_len: 1536
+    run_name: glm_5_3_flash_fp8_channel_ep_decode
+    dataset:
+      name: random-ids
+  source: glm-5.3-flash-cases.md:1100
+- id: glm_5_3_flash_mxfp4_fp8_tp_prefill
+  ppu:
+    assets:
+      model: MODEL_PATH_MXFP4_FP8
+      tokenizer: MODEL_PATH_MXFP4_FP8
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: "3 890P\uFF08btv1.5\uFF09"
+  model:
+    base_args:
+    - --trust-remote-code
+    - --tp-size
+    - '8'
+    - --attention-backend
+    - dsa
+    - --dsa-prefill-backend
+    - flashmla_sparse
+    - --dsa-decode-backend
+    - tilelang
+    - --mem-fraction-static
+    - '0.9'
+    - --max-total-tokens
+    - '106496'
+    base_env: {}
+  variants:
+    default:
+      precision: mxfp4-fp8
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: prefill
+    input:
+      batch_size: 1
+      input_len:
+      - 4096
+      - 16384
+      - 65536
+      - 102400
+      output_len: 1
+    run_name: glm_5_3_flash_mxfp4_fp8_tp_prefill
+  source: glm-5.3-flash-cases.md:1132
+- id: glm_5_3_flash_mxfp4_fp8_tp_decode
+  ppu:
+    assets:
+      model: MODEL_PATH_MXFP4_FP8
+      tokenizer: MODEL_PATH_MXFP4_FP8
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: "3 890P\uFF08btv1.5\uFF09"
+  model:
+    base_args:
+    - --trust-remote-code
+    - --tp-size
+    - '8'
+    - --attention-backend
+    - dsa
+    - --dsa-prefill-backend
+    - flashmla_sparse
+    - --dsa-decode-backend
+    - tilelang
+    - --mem-fraction-static
+    - '0.9'
+    - --disable-radix-cache
+    - --chunked-prefill-size
+    - '8192'
+    - --cuda-graph-max-bs-decode
+    - '64'
+    - --max-total-tokens
+    - '360448'
+    base_env: {}
+  variants:
+    default:
+      precision: mxfp4-fp8
+  benchmark:
+    engine: sglang.benchmark.one_batch_server
+    workload: decode
+    input:
+      batch_size: 64
+      input_len:
+      - 4096
+      output_len: 1536
+    run_name: glm_5_3_flash_mxfp4_fp8_tp_decode
+    dataset:
+      name: random-ids
+  source: glm-5.3-flash-cases.md:1150
+- id: glm_5_3_flash_mxfp4_fp8_ep_prefill
+  ppu:
+    assets:
+      model: MODEL_PATH_MXFP4_FP8
+      tokenizer: MODEL_PATH_MXFP4_FP8
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: "3 890P\uFF08btv1.5\uFF09"
+  model:
+    base_args:
+    - --trust-remote-code
+    - --tp-size
+    - '8'
+    - --ep-size
+    - '8'
+    - --moe-a2a-backend
+    - deepep
+    - --attention-backend
+    - dsa
+    - --dsa-prefill-backend
+    - flashmla_sparse
+    - --dsa-decode-backend
+    - flashmla_sparse
+    - --mem-fraction-static
+    - '0.9'
+    - --disable-shared-experts-fusion
+    - --disable-custom-all-reduce
+    - --max-total-tokens
+    - '106496'
+    - --disable-cuda-graph
+    base_env: {}
+  variants:
+    default:
+      precision: mxfp4-fp8
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: prefill
+    input:
+      batch_size: 1
+      input_len:
+      - 4096
+      - 16384
+      - 65536
+      - 102400
+      output_len: 1
+    run_name: glm_5_3_flash_mxfp4_fp8_ep_prefill
+  source: glm-5.3-flash-cases.md:1176
+- id: glm_5_3_flash_mxfp4_fp8_ep_decode
+  ppu:
+    assets:
+      model: MODEL_PATH_MXFP4_FP8
+      tokenizer: MODEL_PATH_MXFP4_FP8
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: "3 890P\uFF08btv1.5\uFF09"
+  model:
+    base_args:
+    - --trust-remote-code
+    - --tp-size
+    - '8'
+    - --ep-size
+    - '8'
+    - --moe-a2a-backend
+    - deepep
+    - --attention-backend
+    - dsa
+    - --dsa-prefill-backend
+    - flashmla_sparse
+    - --dsa-decode-backend
+    - flashmla_sparse
+    - --mem-fraction-static
+    - '0.9'
+    - --disable-shared-experts-fusion
+    - --disable-custom-all-reduce
+    - --disable-radix-cache
+    - --chunked-prefill-size
+    - '8192'
+    - --cuda-graph-max-bs-decode
+    - '128'
+    - --max-total-tokens
+    - '720896'
+    base_env: {}
+  variants:
+    default:
+      precision: mxfp4-fp8
+  benchmark:
+    engine: sglang.benchmark.one_batch_server
+    workload: decode
+    input:
+      batch_size: 128
+      input_len:
+      - 4096
+      output_len: 1536
+    run_name: glm_5_3_flash_mxfp4_fp8_ep_decode
+    dataset:
+      name: random-ids
+  source: glm-5.3-flash-cases.md:1199

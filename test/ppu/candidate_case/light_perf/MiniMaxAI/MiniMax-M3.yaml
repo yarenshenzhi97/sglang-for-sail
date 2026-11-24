@@ -1,0 +1,943 @@
+schema_version: ppu-serving/v1
+ppu:
+  framework: sglang
+  visibility: candidate
+model:
+  model_id: MiniMax-M3
+light_performance_cases:
+- id: minimax_m3_bf16_tp_prefill
+  ppu:
+    assets:
+      model: MODEL_PATH_BF16
+      tokenizer: MODEL_PATH_BF16
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: 810E (btv1.1)
+  model:
+    base_args:
+    - --trust-remote-code
+    - --tp-size
+    - '16'
+    - --mem-fraction-static
+    - '0.7'
+    - --attention-backend
+    - fa3
+    - --moe-runner-backend
+    - deep_gemm
+    - --cuda-graph-backend-prefill
+    - disabled
+    - --disable-radix-cache
+    base_env: {}
+  variants:
+    default:
+      precision: bf16
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: prefill
+    input:
+      batch_size: 1
+      input_len:
+      - 4096
+      - 16384
+      - 65536
+      - 102400
+      output_len: 1
+    run_name: minimax_m3_bf16_tp_prefill
+  source: minimax-m3-cases.md:234
+- id: minimax_m3_bf16_tp_decode
+  ppu:
+    assets:
+      model: MODEL_PATH_BF16
+      tokenizer: MODEL_PATH_BF16
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: 2x 810E (btv1.1)
+  model:
+    base_args:
+    - --trust-remote-code
+    - --tp-size
+    - '16'
+    - --mem-fraction-static
+    - '0.7'
+    - --attention-backend
+    - fa3
+    - --moe-runner-backend
+    - deep_gemm
+    - --cuda-graph-backend-prefill
+    - disabled
+    - --disable-radix-cache
+    base_env: {}
+  variants:
+    default:
+      precision: bf16
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: decode
+    input:
+      batch_size: 16
+      input_len:
+      - 4096
+      output_len: 1536
+    run_name: minimax_m3_bf16_tp_decode
+  source: minimax-m3-cases.md:252
+- id: minimax_m3_bf16_ep_prefill
+  ppu:
+    assets:
+      model: MODEL_PATH_BF16
+      tokenizer: MODEL_PATH_BF16
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: 2x 810E (btv1.1)
+  model:
+    base_args:
+    - --trust-remote-code
+    - --tp-size
+    - '16'
+    - --ep-size
+    - '16'
+    - --mem-fraction-static
+    - '0.75'
+    - --attention-backend
+    - fa3
+    - --moe-runner-backend
+    - deep_gemm
+    - --cuda-graph-backend-prefill
+    - disabled
+    - --disable-radix-cache
+    - --moe-a2a-backend
+    - deepep
+    - --deepep-mode
+    - auto
+    - --moe-dense-tp-size
+    - '1'
+    - --disable-cuda-graph
+    base_env: {}
+  variants:
+    default:
+      precision: bf16
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: prefill
+    input:
+      batch_size: 1
+      input_len:
+      - 4096
+      - 16384
+      - 65536
+      - 102400
+      output_len: 1
+    run_name: minimax_m3_bf16_ep_prefill
+  source: minimax-m3-cases.md:274
+- id: minimax_m3_bf16_ep_decode
+  ppu:
+    assets:
+      model: MODEL_PATH_BF16
+      tokenizer: MODEL_PATH_BF16
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: 2x 810E (btv1.1)
+  model:
+    base_args:
+    - --trust-remote-code
+    - --tp-size
+    - '16'
+    - --ep-size
+    - '16'
+    - --mem-fraction-static
+    - '0.75'
+    - --attention-backend
+    - fa3
+    - --moe-runner-backend
+    - deep_gemm
+    - --cuda-graph-backend-prefill
+    - disabled
+    - --disable-radix-cache
+    - --moe-a2a-backend
+    - deepep
+    - --deepep-mode
+    - auto
+    - --moe-dense-tp-size
+    - '1'
+    base_env: {}
+  variants:
+    default:
+      precision: bf16
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: decode
+    input:
+      batch_size: 16
+      input_len:
+      - 4096
+      output_len: 1536
+    run_name: minimax_m3_bf16_ep_decode
+  source: minimax-m3-cases.md:297
+- id: minimax_m3_w8a8_int8_tp_prefill
+  ppu:
+    assets:
+      model: MODEL_PATH_W8A8_INT8
+      tokenizer: MODEL_PATH_W8A8_INT8
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: 2x 810E (btv1.1)
+  model:
+    base_args:
+    - --trust-remote-code
+    - --disable-shared-experts-fusion
+    - --tp-size
+    - '16'
+    - --mem-fraction-static
+    - '0.7'
+    - --attention-backend
+    - fa3
+    - --moe-runner-backend
+    - deep_gemm
+    - --quantization
+    - w8a8_int8
+    - --cuda-graph-backend-prefill
+    - disabled
+    - --disable-radix-cache
+    base_env: {}
+  variants:
+    default:
+      precision: w8a8-int8
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: prefill
+    input:
+      batch_size: 1
+      input_len:
+      - 4096
+      - 16384
+      - 65536
+      - 102400
+      output_len: 1
+    run_name: minimax_m3_w8a8_int8_tp_prefill
+  source: minimax-m3-cases.md:325
+- id: minimax_m3_w8a8_int8_tp_decode
+  ppu:
+    assets:
+      model: MODEL_PATH_W8A8_INT8
+      tokenizer: MODEL_PATH_W8A8_INT8
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: 2x 810E (btv1.1)
+  model:
+    base_args:
+    - --trust-remote-code
+    - --disable-shared-experts-fusion
+    - --tp-size
+    - '16'
+    - --mem-fraction-static
+    - '0.7'
+    - --attention-backend
+    - fa3
+    - --moe-runner-backend
+    - deep_gemm
+    - --quantization
+    - w8a8_int8
+    - --cuda-graph-backend-prefill
+    - disabled
+    - --disable-radix-cache
+    base_env: {}
+  variants:
+    default:
+      precision: w8a8-int8
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: decode
+    input:
+      batch_size: 16
+      input_len:
+      - 4096
+      output_len: 1536
+    run_name: minimax_m3_w8a8_int8_tp_decode
+  source: minimax-m3-cases.md:345
+- id: minimax_m3_w8a8_int8_ep_prefill
+  ppu:
+    assets:
+      model: MODEL_PATH_W8A8_INT8
+      tokenizer: MODEL_PATH_W8A8_INT8
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: 2x 810E (btv1.1)
+  model:
+    base_args:
+    - --trust-remote-code
+    - --disable-shared-experts-fusion
+    - --tp-size
+    - '16'
+    - --ep-size
+    - '16'
+    - --mem-fraction-static
+    - '0.75'
+    - --attention-backend
+    - fa3
+    - --moe-runner-backend
+    - deep_gemm
+    - --moe-a2a-backend
+    - deepep
+    - --deepep-mode
+    - auto
+    - --moe-dense-tp-size
+    - '1'
+    - --quantization
+    - w8a8_int8
+    - --cuda-graph-backend-prefill
+    - disabled
+    - --disable-radix-cache
+    - --disable-cuda-graph
+    base_env: {}
+  variants:
+    default:
+      precision: w8a8-int8
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: prefill
+    input:
+      batch_size: 1
+      input_len:
+      - 4096
+      - 16384
+      - 65536
+      - 102400
+      output_len: 1
+    run_name: minimax_m3_w8a8_int8_ep_prefill
+  source: minimax-m3-cases.md:369
+- id: minimax_m3_w8a8_int8_ep_decode
+  ppu:
+    assets:
+      model: MODEL_PATH_W8A8_INT8
+      tokenizer: MODEL_PATH_W8A8_INT8
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: 2x 810E (btv1.1)
+  model:
+    base_args:
+    - --trust-remote-code
+    - --disable-shared-experts-fusion
+    - --tp-size
+    - '16'
+    - --ep-size
+    - '16'
+    - --mem-fraction-static
+    - '0.75'
+    - --attention-backend
+    - fa3
+    - --moe-runner-backend
+    - deep_gemm
+    - --moe-a2a-backend
+    - deepep
+    - --deepep-mode
+    - auto
+    - --moe-dense-tp-size
+    - '1'
+    - --quantization
+    - w8a8_int8
+    - --cuda-graph-backend-prefill
+    - disabled
+    - --disable-radix-cache
+    base_env: {}
+  variants:
+    default:
+      precision: w8a8-int8
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: decode
+    input:
+      batch_size: 16
+      input_len:
+      - 4096
+      output_len: 1536
+    run_name: minimax_m3_w8a8_int8_ep_decode
+  source: minimax-m3-cases.md:394
+- id: minimax_m3_bf16_tp_prefill
+  ppu:
+    assets:
+      model: MODEL_PATH_BF16
+      tokenizer: MODEL_PATH_BF16
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: 890P (btv1.5)
+  model:
+    base_args:
+    - --trust-remote-code
+    - --tp-size
+    - '8'
+    - --mem-fraction-static
+    - '0.9'
+    - --attention-backend
+    - fa3
+    - --moe-runner-backend
+    - deep_gemm
+    - --cuda-graph-backend-prefill
+    - disabled
+    base_env: {}
+  variants:
+    default:
+      precision: bf16
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: prefill
+    input:
+      batch_size: 1
+      input_len:
+      - 4096
+      - 16384
+      - 65536
+      - 102400
+      output_len: 1
+    run_name: minimax_m3_bf16_tp_prefill
+  source: minimax-m3-cases.md:731
+- id: minimax_m3_bf16_tp_decode
+  ppu:
+    assets:
+      model: MODEL_PATH_BF16
+      tokenizer: MODEL_PATH_BF16
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: "3 890P\uFF08btv1.5\uFF09"
+  model:
+    base_args:
+    - --trust-remote-code
+    - --tp-size
+    - '8'
+    - --mem-fraction-static
+    - '0.9'
+    - --attention-backend
+    - fa3
+    - --moe-runner-backend
+    - deep_gemm
+    - --disable-radix-cache
+    - --chunked-prefill-size
+    - '8192'
+    - --cuda-graph-max-bs-decode
+    - '64'
+    - --max-total-tokens
+    - '360448'
+    - --cuda-graph-backend-prefill
+    - disabled
+    base_env: {}
+  variants:
+    default:
+      precision: bf16
+  benchmark:
+    engine: sglang.benchmark.one_batch_server
+    workload: decode
+    input:
+      batch_size: 64
+      input_len:
+      - 4096
+      output_len: 1536
+    run_name: minimax_m3_bf16_tp_decode
+    dataset:
+      name: random-ids
+  source: minimax-m3-cases.md:748
+- id: minimax_m3_bf16_ep_prefill
+  ppu:
+    assets:
+      model: MODEL_PATH_BF16
+      tokenizer: MODEL_PATH_BF16
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: "3 890P\uFF08btv1.5\uFF09"
+  model:
+    base_args:
+    - --trust-remote-code
+    - --tp-size
+    - '8'
+    - --ep-size
+    - '8'
+    - --dp-size
+    - '8'
+    - --enable-dp-attention
+    - --mem-fraction-static
+    - '0.97'
+    - --attention-backend
+    - fa3
+    - --moe-runner-backend
+    - deep_gemm
+    - --disable-radix-cache
+    - --chunked-prefill-size
+    - '8192'
+    - --cuda-graph-max-bs-decode
+    - '1'
+    - --max-total-tokens
+    - '106496'
+    - --cuda-graph-backend-prefill
+    - disabled
+    base_env: {}
+  variants:
+    default:
+      precision: bf16
+  benchmark:
+    engine: sglang.benchmark.one_batch_server
+    workload: prefill
+    input:
+      batch_size: 1
+      input_len:
+      - 4096
+      - 16384
+      - 65536
+      - 102400
+      output_len: 1
+    run_name: minimax_m3_bf16_ep_prefill
+    dataset:
+      name: random-ids
+  source: minimax-m3-cases.md:774
+- id: minimax_m3_bf16_ep_decode
+  ppu:
+    assets:
+      model: MODEL_PATH_BF16
+      tokenizer: MODEL_PATH_BF16
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: "3 890P\uFF08btv1.5\uFF09"
+  model:
+    base_args:
+    - --trust-remote-code
+    - --tp-size
+    - '8'
+    - --ep-size
+    - '8'
+    - --dp-size
+    - '8'
+    - --enable-dp-attention
+    - --mem-fraction-static
+    - '0.97'
+    - --attention-backend
+    - fa3
+    - --moe-runner-backend
+    - deep_gemm
+    - --disable-radix-cache
+    - --chunked-prefill-size
+    - '8192'
+    - --cuda-graph-max-bs-decode
+    - '16'
+    - --max-total-tokens
+    - '720896'
+    - --cuda-graph-backend-prefill
+    - disabled
+    base_env: {}
+  variants:
+    default:
+      precision: bf16
+  benchmark:
+    engine: sglang.benchmark.one_batch_server
+    workload: decode
+    input:
+      batch_size: 128
+      input_len:
+      - 4096
+      output_len: 1536
+    run_name: minimax_m3_bf16_ep_decode
+    dataset:
+      name: random-ids
+  source: minimax-m3-cases.md:799
+- id: minimax_m3_fp8_channel_tp_prefill
+  ppu:
+    assets:
+      model: MODEL_PATH_FP8_CHANNEL
+      tokenizer: MODEL_PATH_FP8_CHANNEL
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: "3 890P\uFF08btv1.5\uFF09"
+  model:
+    base_args:
+    - --trust-remote-code
+    - --disable-shared-experts-fusion
+    - --tp-size
+    - '8'
+    - --mem-fraction-static
+    - '0.9'
+    - --attention-backend
+    - fa3
+    - --moe-runner-backend
+    - deep_gemm
+    - --max-total-tokens
+    - '106496'
+    - --cuda-graph-backend-prefill
+    - disabled
+    base_env: {}
+  variants:
+    default:
+      precision: fp8-channel
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: prefill
+    input:
+      batch_size: 1
+      input_len:
+      - 4096
+      - 16384
+      - 65536
+      - 102400
+      output_len: 1
+    run_name: minimax_m3_fp8_channel_tp_prefill
+  source: minimax-m3-cases.md:830
+- id: minimax_m3_fp8_channel_tp_decode
+  ppu:
+    assets:
+      model: MODEL_PATH_FP8_CHANNEL
+      tokenizer: MODEL_PATH_FP8_CHANNEL
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: "3 890P\uFF08btv1.5\uFF09"
+  model:
+    base_args:
+    - --trust-remote-code
+    - --disable-shared-experts-fusion
+    - --tp-size
+    - '8'
+    - --mem-fraction-static
+    - '0.9'
+    - --attention-backend
+    - fa3
+    - --moe-runner-backend
+    - deep_gemm
+    - --disable-radix-cache
+    - --chunked-prefill-size
+    - '8192'
+    - --cuda-graph-max-bs-decode
+    - '64'
+    - --max-total-tokens
+    - '360448'
+    - --cuda-graph-backend-prefill
+    - disabled
+    base_env: {}
+  variants:
+    default:
+      precision: fp8-channel
+  benchmark:
+    engine: sglang.benchmark.one_batch_server
+    workload: decode
+    input:
+      batch_size: 64
+      input_len:
+      - 4096
+      output_len: 1536
+    run_name: minimax_m3_fp8_channel_tp_decode
+    dataset:
+      name: random-ids
+  source: minimax-m3-cases.md:849
+- id: minimax_m3_fp8_channel_ep_prefill
+  ppu:
+    assets:
+      model: MODEL_PATH_FP8_CHANNEL
+      tokenizer: MODEL_PATH_FP8_CHANNEL
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: "3 890P\uFF08btv1.5\uFF09"
+  model:
+    base_args:
+    - --trust-remote-code
+    - --disable-shared-experts-fusion
+    - --tp-size
+    - '8'
+    - --ep-size
+    - '8'
+    - --dp-size
+    - '8'
+    - --enable-dp-attention
+    - --mem-fraction-static
+    - '0.95'
+    - --moe-a2a-backend
+    - deepep
+    - --deepep-mode
+    - auto
+    - --attention-backend
+    - fa3
+    - --moe-runner-backend
+    - deep_gemm
+    - --moe-dense-tp-size
+    - '1'
+    - --disable-radix-cache
+    - --chunked-prefill-size
+    - '8192'
+    - --cuda-graph-max-bs-decode
+    - '1'
+    - --max-total-tokens
+    - '106496'
+    - --cuda-graph-backend-prefill
+    - disabled
+    base_env: {}
+  variants:
+    default:
+      precision: fp8-channel
+  benchmark:
+    engine: sglang.benchmark.one_batch_server
+    workload: prefill
+    input:
+      batch_size: 1
+      input_len:
+      - 4096
+      - 16384
+      - 65536
+      - 102400
+      output_len: 1
+    run_name: minimax_m3_fp8_channel_ep_prefill
+    dataset:
+      name: random-ids
+  source: minimax-m3-cases.md:876
+- id: minimax_m3_fp8_channel_ep_decode
+  ppu:
+    assets:
+      model: MODEL_PATH_FP8_CHANNEL
+      tokenizer: MODEL_PATH_FP8_CHANNEL
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: "3 890P\uFF08btv1.5\uFF09"
+  model:
+    base_args:
+    - --trust-remote-code
+    - --disable-shared-experts-fusion
+    - --tp-size
+    - '8'
+    - --ep-size
+    - '8'
+    - --dp-size
+    - '8'
+    - --enable-dp-attention
+    - --mem-fraction-static
+    - '0.95'
+    - --moe-a2a-backend
+    - deepep
+    - --deepep-mode
+    - auto
+    - --attention-backend
+    - fa3
+    - --moe-runner-backend
+    - deep_gemm
+    - --moe-dense-tp-size
+    - '1'
+    - --disable-radix-cache
+    - --chunked-prefill-size
+    - '8192'
+    - --cuda-graph-max-bs-decode
+    - '128'
+    - --max-total-tokens
+    - '720896'
+    - --cuda-graph-backend-prefill
+    - disabled
+    base_env: {}
+  variants:
+    default:
+      precision: fp8-channel
+  benchmark:
+    engine: sglang.benchmark.one_batch_server
+    workload: decode
+    input:
+      batch_size: 128
+      input_len:
+      - 4096
+      output_len: 1536
+    run_name: minimax_m3_fp8_channel_ep_decode
+    dataset:
+      name: random-ids
+  source: minimax-m3-cases.md:905
+- id: minimax_m3_mxfp4_fp8_tp_prefill
+  ppu:
+    assets:
+      model: MODEL_PATH_MXFP4_FP8
+      tokenizer: MODEL_PATH_MXFP4_FP8
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: "3 890P\uFF08btv1.5\uFF09"
+  model:
+    base_args:
+    - --trust-remote-code
+    - --disable-shared-experts-fusion
+    - --tp-size
+    - '8'
+    - --mem-fraction-static
+    - '0.9'
+    - --attention-backend
+    - fa3
+    - --moe-runner-backend
+    - deep_gemm
+    - --max-total-tokens
+    - '106496'
+    - --cuda-graph-backend-prefill
+    - disabled
+    base_env: {}
+  variants:
+    default:
+      precision: mxfp4-fp8
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: prefill
+    input:
+      batch_size: 1
+      input_len:
+      - 4096
+      - 16384
+      - 65536
+      - 102400
+      output_len: 1
+    run_name: minimax_m3_mxfp4_fp8_tp_prefill
+  source: minimax-m3-cases.md:940
+- id: minimax_m3_mxfp4_fp8_tp_decode
+  ppu:
+    assets:
+      model: MODEL_PATH_MXFP4_FP8
+      tokenizer: MODEL_PATH_MXFP4_FP8
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: "3 890P\uFF08btv1.5\uFF09"
+  model:
+    base_args:
+    - --trust-remote-code
+    - --disable-shared-experts-fusion
+    - --tp-size
+    - '8'
+    - --mem-fraction-static
+    - '0.9'
+    - --attention-backend
+    - fa3
+    - --moe-runner-backend
+    - deep_gemm
+    - --max-total-tokens
+    - '360448'
+    - --cuda-graph-backend-prefill
+    - disabled
+    base_env: {}
+  variants:
+    default:
+      precision: mxfp4-fp8
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: decode
+    input:
+      batch_size: 64
+      input_len:
+      - 4096
+      output_len: 1536
+    run_name: minimax_m3_mxfp4_fp8_tp_decode
+  source: minimax-m3-cases.md:959
+- id: minimax_m3_mxfp4_fp8_ep_prefill
+  ppu:
+    assets:
+      model: MODEL_PATH_MXFP4_FP8
+      tokenizer: MODEL_PATH_MXFP4_FP8
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: "3 890P\uFF08btv1.5\uFF09"
+  model:
+    base_args:
+    - --trust-remote-code
+    - --disable-shared-experts-fusion
+    - --tp-size
+    - '8'
+    - --ep-size
+    - '8'
+    - --dp-size
+    - '8'
+    - --enable-dp-attention
+    - --mem-fraction-static
+    - '0.9'
+    - --attention-backend
+    - fa3
+    - --moe-runner-backend
+    - deep_gemm
+    - --moe-dense-tp-size
+    - '1'
+    - --disable-radix-cache
+    - --chunked-prefill-size
+    - '8192'
+    - --cuda-graph-max-bs-decode
+    - '1'
+    - --max-total-tokens
+    - '106496'
+    - --cuda-graph-backend-prefill
+    - disabled
+    base_env: {}
+  variants:
+    default:
+      precision: mxfp4-fp8
+  benchmark:
+    engine: sglang.benchmark.one_batch_server
+    workload: prefill
+    input:
+      batch_size: 1
+      input_len:
+      - 4096
+      - 16384
+      - 65536
+      - 102400
+      output_len: 1
+    run_name: minimax_m3_mxfp4_fp8_ep_prefill
+    dataset:
+      name: random-ids
+  source: minimax-m3-cases.md:982
+- id: minimax_m3_mxfp4_fp8_ep_decode
+  ppu:
+    assets:
+      model: MODEL_PATH_MXFP4_FP8
+      tokenizer: MODEL_PATH_MXFP4_FP8
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: "3 890P\uFF08btv1.5\uFF09"
+  model:
+    base_args:
+    - --trust-remote-code
+    - --disable-shared-experts-fusion
+    - --tp-size
+    - '8'
+    - --ep-size
+    - '8'
+    - --dp-size
+    - '8'
+    - --enable-dp-attention
+    - --mem-fraction-static
+    - '0.9'
+    - --attention-backend
+    - fa3
+    - --moe-runner-backend
+    - deep_gemm
+    - --moe-dense-tp-size
+    - '1'
+    - --disable-radix-cache
+    - --chunked-prefill-size
+    - '8192'
+    - --cuda-graph-max-bs-decode
+    - '128'
+    - --max-total-tokens
+    - '720896'
+    - --cuda-graph-backend-prefill
+    - disabled
+    base_env: {}
+  variants:
+    default:
+      precision: mxfp4-fp8
+  benchmark:
+    engine: sglang.benchmark.one_batch_server
+    workload: decode
+    input:
+      batch_size: 128
+      input_len:
+      - 4096
+      output_len: 1536
+    run_name: minimax_m3_mxfp4_fp8_ep_decode
+    dataset:
+      name: random-ids
+  source: minimax-m3-cases.md:1009

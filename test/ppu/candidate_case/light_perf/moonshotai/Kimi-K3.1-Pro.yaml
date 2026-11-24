@@ -1,0 +1,665 @@
+schema_version: ppu-serving/v1
+ppu:
+  framework: sglang
+  visibility: candidate
+model:
+  model_id: Kimi-K3.1-Pro
+light_performance_cases:
+- id: kimi_k3_1_pro_mxfp4_tp_prefill
+  ppu:
+    assets:
+      model: MODEL_PATH_MXFP4
+      tokenizer: MODEL_PATH_MXFP4
+    topology:
+      kind: multi_node
+      nodes: 2
+      parallelism: TP (tp32+ep32)
+    platform: 810E (btv1.1)
+  model:
+    base_args:
+    - --dist-init-addr
+    - node0:29500
+    - --nnodes
+    - '2'
+    - --node-rank
+    - '0'
+    - --tp-size
+    - '32'
+    - --ep-size
+    - '32'
+    - --mem-fraction-static
+    - '0.85'
+    - --page-size
+    - '64'
+    - --disable-cuda-graph
+    - --max-running-requests
+    - '1'
+    - --max-mamba-cache-size
+    - '5'
+    - --mamba-ssm-dtype
+    - bfloat16
+    - --trust-remote-code
+    - --attention-backend
+    - dsa
+    - --dsa-prefill-backend
+    - flashmla_sparse
+    - --dsa-decode-backend
+    - flashmla_kv
+    - --linear-attn-backend
+    - flashkda
+    - --moe-runner-backend
+    - deep_gemm
+    - --max-total-tokens
+    - '106496'
+    base_env:
+      SGLANG_JIT_DEEPGEMM_PRECOMPILE: '0'
+      SGLANG_SAIL_DEEPGEMM_MXFP4_W4A16: '1'
+      SGLANG_WARMUP_TIMEOUT: '3600'
+  variants:
+    default:
+      precision: mxfp4
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: prefill
+    input:
+      batch_size: 1
+      input_len:
+      - 4096
+      - 16384
+      - 65536
+      - 102400
+      output_len: 1
+    run_name: kimi_k3_1_pro_mxfp4_tp_prefill
+  source: kimi-k3.1-pro-cases.md:166
+- id: kimi_k3_1_pro_mxfp4_tp_decode
+  ppu:
+    assets:
+      model: MODEL_PATH_MXFP4
+      tokenizer: MODEL_PATH_MXFP4
+    topology:
+      kind: multi_node
+      nodes: 2
+      parallelism: TP (tp32+ep32)
+    platform: 2x 810E (btv1.1)
+  model:
+    base_args:
+    - --dist-init-addr
+    - node0:29500
+    - --nnodes
+    - '2'
+    - --node-rank
+    - '0'
+    - --tp-size
+    - '32'
+    - --ep-size
+    - '32'
+    - --mem-fraction-static
+    - '0.85'
+    - --page-size
+    - '64'
+    - --max-total-tokens
+    - '360448'
+    - --disable-radix-cache
+    - --max-running-requests
+    - '64'
+    - --max-mamba-cache-size
+    - '64'
+    - --mamba-ssm-dtype
+    - float32
+    - --chunked-prefill-size
+    - '256'
+    - --trust-remote-code
+    - --attention-backend
+    - dsa
+    - --dsa-prefill-backend
+    - flashmla_sparse
+    - --dsa-decode-backend
+    - flashmla_kv
+    - --linear-attn-backend
+    - flashkda
+    - --moe-runner-backend
+    - deep_gemm
+    base_env:
+      SGLANG_JIT_DEEPGEMM_PRECOMPILE: '0'
+      SGLANG_SAIL_DEEPGEMM_MXFP4_W4A16: '1'
+      SGLANG_WARMUP_TIMEOUT: '3600'
+  variants:
+    default:
+      precision: mxfp4
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: decode
+    input:
+      batch_size: 64
+      input_len:
+      - 4096
+      output_len: 1536
+    run_name: kimi_k3_1_pro_mxfp4_tp_decode
+  source: kimi-k3.1-pro-cases.md:198
+- id: kimi_k3_1_pro_mxfp4_ep_prefill
+  ppu:
+    assets:
+      model: MODEL_PATH_MXFP4
+      tokenizer: MODEL_PATH_MXFP4
+    topology:
+      kind: multi_node
+      nodes: 2
+      parallelism: EP (tp32+ep32)
+    platform: 2x 810E (btv1.1)
+  model:
+    base_args:
+    - --dist-init-addr
+    - node0:29500
+    - --nnodes
+    - '2'
+    - --node-rank
+    - '0'
+    - --tp-size
+    - '32'
+    - --ep-size
+    - '32'
+    - --mem-fraction-static
+    - '0.85'
+    - --page-size
+    - '64'
+    - --disable-cuda-graph
+    - --max-running-requests
+    - '1'
+    - --max-mamba-cache-size
+    - '5'
+    - --mamba-ssm-dtype
+    - bfloat16
+    - --trust-remote-code
+    - --attention-backend
+    - dsa
+    - --dsa-prefill-backend
+    - flashmla_sparse
+    - --dsa-decode-backend
+    - flashmla_kv
+    - --linear-attn-backend
+    - flashkda
+    - --moe-runner-backend
+    - deep_gemm
+    - --max-total-tokens
+    - '106496'
+    base_env:
+      SGLANG_JIT_DEEPGEMM_PRECOMPILE: '0'
+      SGLANG_SAIL_DEEPGEMM_MXFP4_W4A16: '1'
+      SGLANG_WARMUP_TIMEOUT: '3600'
+  variants:
+    default:
+      precision: mxfp4
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: prefill
+    input:
+      batch_size: 1
+      input_len:
+      - 4096
+      - 16384
+      - 65536
+      - 102400
+      output_len: 1
+    run_name: kimi_k3_1_pro_mxfp4_ep_prefill
+  source: kimi-k3.1-pro-cases.md:235
+- id: kimi_k3_1_pro_mxfp4_ep_decode
+  ppu:
+    assets:
+      model: MODEL_PATH_MXFP4
+      tokenizer: MODEL_PATH_MXFP4
+    topology:
+      kind: multi_node
+      nodes: 2
+      parallelism: EP (tp32+ep32)
+    platform: 2x 810E (btv1.1)
+  model:
+    base_args:
+    - --dist-init-addr
+    - node0:29500
+    - --nnodes
+    - '2'
+    - --node-rank
+    - '0'
+    - --tp-size
+    - '32'
+    - --ep-size
+    - '32'
+    - --mem-fraction-static
+    - '0.90'
+    - --page-size
+    - '64'
+    - --max-total-tokens
+    - '720896'
+    - --disable-radix-cache
+    - --max-running-requests
+    - '128'
+    - --max-mamba-cache-size
+    - '128'
+    - --mamba-ssm-dtype
+    - float32
+    - --chunked-prefill-size
+    - '64'
+    - --trust-remote-code
+    - --attention-backend
+    - dsa
+    - --dsa-prefill-backend
+    - flashmla_sparse
+    - --dsa-decode-backend
+    - flashmla_kv
+    - --linear-attn-backend
+    - flashkda
+    - --moe-runner-backend
+    - deep_gemm
+    base_env:
+      SGLANG_JIT_DEEPGEMM_PRECOMPILE: '0'
+      SGLANG_SAIL_DEEPGEMM_MXFP4_W4A16: '1'
+      SGLANG_WARMUP_TIMEOUT: '3600'
+  variants:
+    default:
+      precision: mxfp4
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: decode
+    input:
+      batch_size: 128
+      input_len:
+      - 4096
+      output_len: 1536
+    run_name: kimi_k3_1_pro_mxfp4_ep_decode
+  source: kimi-k3.1-pro-cases.md:267
+- id: kimi_k3_1_pro_mxfp4_pp_prefill
+  ppu:
+    assets:
+      model: MODEL_PATH_MXFP4
+      tokenizer: MODEL_PATH_MXFP4
+    topology:
+      kind: multi_node
+      nodes: 2
+      parallelism: PP (tp8+pp4+cp8)
+    platform: 2x 810E (btv1.1)
+  model:
+    base_args:
+    - --dist-init-addr
+    - node0:29500
+    - --nnodes
+    - '2'
+    - --node-rank
+    - '0'
+    - --tp-size
+    - '8'
+    - --attn-cp-size
+    - '8'
+    - --enable-prefill-cp
+    - --cp-strategy
+    - interleave
+    - --pp-size
+    - '4'
+    - --mem-fraction-static
+    - '0.85'
+    - --page-size
+    - '64'
+    - --disable-radix-cache
+    - --disable-cuda-graph
+    - --max-running-requests
+    - '1'
+    - --max-mamba-cache-size
+    - '4'
+    - --mamba-ssm-dtype
+    - bfloat16
+    - --trust-remote-code
+    - --attention-backend
+    - dsa
+    - --dsa-prefill-backend
+    - flashmla_sparse
+    - --dsa-decode-backend
+    - flashmla_kv
+    - --linear-attn-backend
+    - flashkda
+    - --moe-runner-backend
+    - deep_gemm
+    - --max-total-tokens
+    - '106496'
+    base_env:
+      SGLANG_JIT_DEEPGEMM_PRECOMPILE: '0'
+      SGLANG_SAIL_DEEPGEMM_MXFP4_W4A16: '1'
+      SGLANG_PP_LAYER_PARTITION: 24,23,23,23
+      SGLANG_PP_LAST_STAGE_STREAM_ORDERING: '1'
+      SGLANG_WARMUP_TIMEOUT: '3600'
+  variants:
+    default:
+      precision: mxfp4
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: prefill
+    input:
+      batch_size: 1
+      input_len:
+      - 4096
+      - 16384
+      - 65536
+      - 102400
+      output_len: 1
+    run_name: kimi_k3_1_pro_mxfp4_pp_prefill
+  source: kimi-k3.1-pro-cases.md:304
+- id: kimi_k3_1_pro_mxfp4_pp_decode
+  ppu:
+    assets:
+      model: MODEL_PATH_MXFP4
+      tokenizer: MODEL_PATH_MXFP4
+    topology:
+      kind: multi_node
+      nodes: 2
+      parallelism: PP (tp8+pp4+cp8)
+    platform: 2x 810E (btv1.1)
+  model:
+    base_args:
+    - --dist-init-addr
+    - node0:29500
+    - --nnodes
+    - '2'
+    - --node-rank
+    - '0'
+    - --tp-size
+    - '8'
+    - --attn-cp-size
+    - '8'
+    - --enable-prefill-cp
+    - --cp-strategy
+    - interleave
+    - --pp-size
+    - '4'
+    - --mem-fraction-static
+    - '0.85'
+    - --page-size
+    - '64'
+    - --max-total-tokens
+    - '360448'
+    - --disable-radix-cache
+    - --max-running-requests
+    - '64'
+    - --max-mamba-cache-size
+    - '64'
+    - --mamba-ssm-dtype
+    - float32
+    - --chunked-prefill-size
+    - '256'
+    - --trust-remote-code
+    - --attention-backend
+    - dsa
+    - --dsa-prefill-backend
+    - flashmla_sparse
+    - --dsa-decode-backend
+    - flashmla_kv
+    - --linear-attn-backend
+    - flashkda
+    - --moe-runner-backend
+    - deep_gemm
+    base_env:
+      SGLANG_JIT_DEEPGEMM_PRECOMPILE: '0'
+      SGLANG_SAIL_DEEPGEMM_MXFP4_W4A16: '1'
+      SGLANG_PP_LAYER_PARTITION: 24,23,23,23
+      SGLANG_PP_LAST_STAGE_STREAM_ORDERING: '1'
+      SGLANG_WARMUP_TIMEOUT: '3600'
+  variants:
+    default:
+      precision: mxfp4
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: decode
+    input:
+      batch_size: 64
+      input_len:
+      - 4096
+      output_len: 1536
+    run_name: kimi_k3_1_pro_mxfp4_pp_decode
+  source: kimi-k3.1-pro-cases.md:342
+- id: kimi_k3_1_pro_mxfp4_ep_prefill
+  ppu:
+    assets:
+      model: MODEL_PATH_MXFP4
+      tokenizer: MODEL_PATH_MXFP4
+    topology:
+      kind: multi_node
+      nodes: 4
+      parallelism: EP (tp32+dp4+ep32)
+    platform: 890P (btv1.5)
+  model:
+    base_args:
+    - --dist-init-addr
+    - node0:29500
+    - --nnodes
+    - '4'
+    - --node-rank
+    - '0'
+    - --trust-remote-code
+    - --tp-size
+    - '32'
+    - --ep-size
+    - '32'
+    - --moe-a2a-backend
+    - megamoe
+    - --mem-fraction-static
+    - '0.7'
+    - --attention-backend
+    - dsa
+    - --dsa-prefill-backend
+    - flashmla_sparse
+    - --dsa-decode-backend
+    - flashmla_kv
+    - --linear-attn-backend
+    - flashkda
+    - --enable-shared-experts-attn-tp
+    - --max-total-tokens
+    - '106496'
+    base_env:
+      SGLANG_JIT_DEEPGEMM_PRECOMPILE: '0'
+      SGLANG_K3_FUSED_FRONT: '0'
+      SGLANG_SAIL_DEEPGEMM_MXFP4_W4A8: '1'
+      SGLANG_OPT_DEEPGEMM_MEGA_MOE_NUM_MAX_TOKENS_PER_RANK: '2048'
+      SGLANG_WARMUP_TIMEOUT: '3600'
+      HF_HUB_OFFLINE: '1'
+  variants:
+    default:
+      precision: mxfp4
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: prefill
+    input:
+      batch_size: 1
+      input_len:
+      - 4096
+      - 16384
+      - 65536
+      - 102400
+      output_len: 1
+    run_name: kimi_k3_1_pro_mxfp4_ep_prefill
+  source: kimi-k3.1-pro-cases.md:532
+- id: kimi_k3_1_pro_mxfp4_ep_decode
+  ppu:
+    assets:
+      model: MODEL_PATH_MXFP4
+      tokenizer: MODEL_PATH_MXFP4
+    topology:
+      kind: multi_node
+      nodes: 4
+      parallelism: EP (tp32+dp4+ep32)
+    platform: "3 890P\uFF08btv1.5\uFF09"
+  model:
+    base_args:
+    - --dist-init-addr
+    - node0:29500
+    - --nnodes
+    - '4'
+    - --node-rank
+    - '0'
+    - --trust-remote-code
+    - --tp-size
+    - '32'
+    - --ep-size
+    - '32'
+    - --moe-a2a-backend
+    - megamoe
+    - --mem-fraction-static
+    - '0.7'
+    - --attention-backend
+    - dsa
+    - --dsa-prefill-backend
+    - flashmla_sparse
+    - --dsa-decode-backend
+    - flashmla_kv
+    - --linear-attn-backend
+    - flashkda
+    - --enable-shared-experts-attn-tp
+    base_env:
+      SGLANG_JIT_DEEPGEMM_PRECOMPILE: '0'
+      SGLANG_K3_FUSED_FRONT: '0'
+      SGLANG_SAIL_DEEPGEMM_MXFP4_W4A8: '1'
+      SGLANG_OPT_DEEPGEMM_MEGA_MOE_NUM_MAX_TOKENS_PER_RANK: '2048'
+      SGLANG_WARMUP_TIMEOUT: '3600'
+      HF_HUB_OFFLINE: '1'
+  variants:
+    default:
+      precision: mxfp4
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: decode
+    input:
+      batch_size: 128
+      input_len:
+      - 4096
+      output_len: 1536
+    run_name: kimi_k3_1_pro_mxfp4_ep_decode
+  source: kimi-k3.1-pro-cases.md:563
+- id: kimi_k3_1_pro_mxfp4_pp_prefill
+  ppu:
+    assets:
+      model: MODEL_PATH_MXFP4
+      tokenizer: MODEL_PATH_MXFP4
+    topology:
+      kind: multi_node
+      nodes: 2
+      parallelism: PP (tp8+pp2+ep8+cp8)
+    platform: "3 890P\uFF08btv1.5\uFF09"
+  model:
+    base_args:
+    - --dist-init-addr
+    - node0:29500
+    - --nnodes
+    - '2'
+    - --node-rank
+    - '0'
+    - --trust-remote-code
+    - --tp-size
+    - '8'
+    - --attn-cp-size
+    - '8'
+    - --enable-prefill-cp
+    - --cp-strategy
+    - interleave
+    - --ep-size
+    - '8'
+    - --moe-a2a-backend
+    - megamoe
+    - --pp-size
+    - '2'
+    - --mem-fraction-static
+    - '0.98'
+    - --attention-backend
+    - dsa
+    - --dsa-prefill-backend
+    - flashmla_sparse
+    - --dsa-decode-backend
+    - flashmla_kv
+    - --linear-attn-backend
+    - flashkda
+    - --max-total-tokens
+    - '106496'
+    base_env:
+      SGLANG_JIT_DEEPGEMM_PRECOMPILE: '0'
+      SGLANG_K3_FUSED_FRONT: '0'
+      SGLANG_SAIL_DEEPGEMM_MXFP4_W4A8: '1'
+      SGLANG_OPT_DEEPGEMM_MEGA_MOE_NUM_MAX_TOKENS_PER_RANK: '2048'
+      SGLANG_PP_LAYER_PARTITION: 47,46
+      SGLANG_PP_LAST_STAGE_STREAM_ORDERING: '1'
+      SGLANG_WARMUP_TIMEOUT: '3600'
+      HF_HUB_OFFLINE: '1'
+  variants:
+    default:
+      precision: mxfp4
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: prefill
+    input:
+      batch_size: 1
+      input_len:
+      - 4096
+      - 16384
+      - 65536
+      - 102400
+      output_len: 1
+    run_name: kimi_k3_1_pro_mxfp4_pp_prefill
+  source: kimi-k3.1-pro-cases.md:597
+- id: kimi_k3_1_pro_mxfp4_pp_decode
+  ppu:
+    assets:
+      model: MODEL_PATH_MXFP4
+      tokenizer: MODEL_PATH_MXFP4
+    topology:
+      kind: multi_node
+      nodes: 2
+      parallelism: PP (tp8+pp2+ep8+cp8)
+    platform: "3 890P\uFF08btv1.5\uFF09"
+  model:
+    base_args:
+    - --dist-init-addr
+    - node0:29500
+    - --nnodes
+    - '2'
+    - --node-rank
+    - '0'
+    - --trust-remote-code
+    - --tp-size
+    - '8'
+    - --attn-cp-size
+    - '8'
+    - --enable-prefill-cp
+    - --cp-strategy
+    - interleave
+    - --ep-size
+    - '8'
+    - --moe-a2a-backend
+    - megamoe
+    - --pp-size
+    - '2'
+    - --mem-fraction-static
+    - '0.98'
+    - --attention-backend
+    - dsa
+    - --dsa-prefill-backend
+    - flashmla_sparse
+    - --dsa-decode-backend
+    - flashmla_kv
+    - --linear-attn-backend
+    - flashkda
+    base_env:
+      SGLANG_JIT_DEEPGEMM_PRECOMPILE: '0'
+      SGLANG_K3_FUSED_FRONT: '0'
+      SGLANG_SAIL_DEEPGEMM_MXFP4_W4A8: '1'
+      SGLANG_OPT_DEEPGEMM_MEGA_MOE_NUM_MAX_TOKENS_PER_RANK: '2048'
+      SGLANG_PP_LAYER_PARTITION: 47,46
+      SGLANG_PP_LAST_STAGE_STREAM_ORDERING: '1'
+      SGLANG_WARMUP_TIMEOUT: '3600'
+      HF_HUB_OFFLINE: '1'
+  variants:
+    default:
+      precision: mxfp4
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: decode
+    input:
+      batch_size: 64
+      input_len:
+      - 4096
+      output_len: 1536
+    run_name: kimi_k3_1_pro_mxfp4_pp_decode
+  source: kimi-k3.1-pro-cases.md:633

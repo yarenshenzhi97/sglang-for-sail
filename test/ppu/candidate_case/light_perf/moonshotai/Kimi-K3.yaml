@@ -1,0 +1,1236 @@
+schema_version: ppu-serving/v1
+ppu:
+  framework: sglang
+  visibility: candidate
+model:
+  model_id: Kimi-K3
+light_performance_cases:
+- id: kimi_k3_w4a8_int8_tp_prefill
+  ppu:
+    assets:
+      model: MODEL_PATH_W4A8_INT8
+      tokenizer: MODEL_PATH_W4A8_INT8
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: 810E (btv1.1)
+  model:
+    base_args:
+    - --dist-init-addr
+    - node0:29500
+    - --nnodes
+    - '2'
+    - --node-rank
+    - '0'
+    - --trust-remote-code
+    - --tp-size
+    - '32'
+    - --mem-fraction-static
+    - '0.85'
+    - --prefill-attention-backend
+    - fa3
+    - --decode-attention-backend
+    - flashmla
+    - --linear-attn-backend
+    - flashkda
+    - --moe-runner-backend
+    - deep_gemm
+    - --max-total-tokens
+    - '106496'
+    base_env: {}
+  variants:
+    default:
+      precision: w4a8-int8
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: prefill
+    input:
+      batch_size: 1
+      input_len:
+      - 4096
+      - 16384
+      - 65536
+      - 102400
+      output_len: 1
+    run_name: kimi_k3_w4a8_int8_tp_prefill
+  source: kimi-k3-cases.md:281
+- id: kimi_k3_w4a8_int8_tp_decode
+  ppu:
+    assets:
+      model: MODEL_PATH_W4A8_INT8
+      tokenizer: MODEL_PATH_W4A8_INT8
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: 2x 810E (btv1.1)
+  model:
+    base_args:
+    - --dist-init-addr
+    - node0:29500
+    - --nnodes
+    - '2'
+    - --node-rank
+    - '0'
+    - --trust-remote-code
+    - --tp-size
+    - '32'
+    - --mem-fraction-static
+    - '0.75'
+    - --disable-radix-cache
+    - --max-total-tokens
+    - '393216'
+    - --max-running-requests
+    - '64'
+    - --max-mamba-cache-size
+    - '320'
+    - --mamba-ssm-dtype
+    - bfloat16
+    - --chunked-prefill-size
+    - '256'
+    - --prefill-attention-backend
+    - fa3
+    - --decode-attention-backend
+    - flashmla
+    - --linear-attn-backend
+    - flashkda
+    - --moe-runner-backend
+    - deep_gemm
+    base_env: {}
+  variants:
+    default:
+      precision: w4a8-int8
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: decode
+    input:
+      batch_size: 64
+      input_len:
+      - 4096
+      output_len: 1536
+    run_name: kimi_k3_w4a8_int8_tp_decode
+  source: kimi-k3-cases.md:303
+- id: kimi_k3_w4a8_int8_ep_prefill
+  ppu:
+    assets:
+      model: MODEL_PATH_W4A8_INT8
+      tokenizer: MODEL_PATH_W4A8_INT8
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: 2x 810E (btv1.1)
+  model:
+    base_args:
+    - --dist-init-addr
+    - node0:29500
+    - --nnodes
+    - '2'
+    - --node-rank
+    - '0'
+    - --trust-remote-code
+    - --tp-size
+    - '32'
+    - --ep-size
+    - '32'
+    - --mem-fraction-static
+    - '0.85'
+    - --prefill-attention-backend
+    - fa3
+    - --decode-attention-backend
+    - flashmla
+    - --linear-attn-backend
+    - flashkda
+    - --moe-runner-backend
+    - deep_gemm
+    - --max-total-tokens
+    - '106496'
+    base_env: {}
+  variants:
+    default:
+      precision: w4a8-int8
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: prefill
+    input:
+      batch_size: 1
+      input_len:
+      - 4096
+      - 16384
+      - 65536
+      - 102400
+      output_len: 1
+    run_name: kimi_k3_w4a8_int8_ep_prefill
+  source: kimi-k3-cases.md:334
+- id: kimi_k3_w4a8_int8_ep_decode
+  ppu:
+    assets:
+      model: MODEL_PATH_W4A8_INT8
+      tokenizer: MODEL_PATH_W4A8_INT8
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: 2x 810E (btv1.1)
+  model:
+    base_args:
+    - --dist-init-addr
+    - node0:29500
+    - --nnodes
+    - '2'
+    - --node-rank
+    - '0'
+    - --trust-remote-code
+    - --tp-size
+    - '32'
+    - --ep-size
+    - '32'
+    - --mem-fraction-static
+    - '0.92'
+    - --max-total-tokens
+    - '720896'
+    - --disable-radix-cache
+    - --max-running-requests
+    - '128'
+    - --max-mamba-cache-size
+    - '128'
+    - --mamba-ssm-dtype
+    - bfloat16
+    - --chunked-prefill-size
+    - '64'
+    - --prefill-attention-backend
+    - fa3
+    - --decode-attention-backend
+    - flashmla
+    - --linear-attn-backend
+    - flashkda
+    - --moe-runner-backend
+    - deep_gemm
+    base_env: {}
+  variants:
+    default:
+      precision: w4a8-int8
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: decode
+    input:
+      batch_size: 128
+      input_len:
+      - 4096
+      output_len: 1536
+    run_name: kimi_k3_w4a8_int8_ep_decode
+  source: kimi-k3-cases.md:357
+- id: kimi_k3_w4a8_int8_pp_prefill
+  ppu:
+    assets:
+      model: MODEL_PATH_W4A8_INT8
+      tokenizer: MODEL_PATH_W4A8_INT8
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: 2x 810E (btv1.1)
+  model:
+    base_args:
+    - --dist-init-addr
+    - node0:29500
+    - --nnodes
+    - '2'
+    - --node-rank
+    - '0'
+    - --trust-remote-code
+    - --tp-size
+    - '16'
+    - --pp-size
+    - '2'
+    - --mem-fraction-static
+    - '0.98'
+    - --prefill-attention-backend
+    - fa3
+    - --decode-attention-backend
+    - flashmla
+    - --linear-attn-backend
+    - flashkda
+    - --max-total-tokens
+    - '106496'
+    base_env: {}
+  variants:
+    default:
+      precision: w4a8-int8
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: prefill
+    input:
+      batch_size: 1
+      input_len:
+      - 4096
+      - 16384
+      - 65536
+      - 102400
+      output_len: 1
+    run_name: kimi_k3_w4a8_int8_pp_prefill
+  source: kimi-k3-cases.md:389
+- id: kimi_k3_w4a8_int8_pp_decode
+  ppu:
+    assets:
+      model: MODEL_PATH_W4A8_INT8
+      tokenizer: MODEL_PATH_W4A8_INT8
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: 2x 810E (btv1.1)
+  model:
+    base_args:
+    - --dist-init-addr
+    - node0:29500
+    - --nnodes
+    - '2'
+    - --node-rank
+    - '0'
+    - --trust-remote-code
+    - --tp-size
+    - '16'
+    - --pp-size
+    - '2'
+    - --mem-fraction-static
+    - '0.75'
+    - --max-total-tokens
+    - '393216'
+    - --disable-radix-cache
+    - --max-running-requests
+    - '64'
+    - --max-mamba-cache-size
+    - '256'
+    - --mamba-ssm-dtype
+    - bfloat16
+    - --chunked-prefill-size
+    - '256'
+    - --prefill-attention-backend
+    - fa3
+    - --decode-attention-backend
+    - flashmla
+    - --linear-attn-backend
+    - flashkda
+    base_env: {}
+  variants:
+    default:
+      precision: w4a8-int8
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: decode
+    input:
+      batch_size: 64
+      input_len:
+      - 4096
+      output_len: 1536
+    run_name: kimi_k3_w4a8_int8_pp_decode
+  source: kimi-k3-cases.md:411
+- id: kimi_k3_int4_tp_prefill
+  ppu:
+    assets:
+      model: MODEL_PATH_INT4
+      tokenizer: MODEL_PATH_INT4
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: 2x 810E (btv1.1)
+  model:
+    base_args:
+    - --dist-init-addr
+    - node0:29500
+    - --nnodes
+    - '2'
+    - --node-rank
+    - '0'
+    - --trust-remote-code
+    - --tp-size
+    - '8'
+    - --pp-size
+    - '4'
+    - --mem-fraction-static
+    - '0.98'
+    - --prefill-attention-backend
+    - fa3
+    - --decode-attention-backend
+    - flashmla
+    - --linear-attn-backend
+    - flashkda
+    - --max-total-tokens
+    - '106496'
+    base_env: {}
+  variants:
+    default:
+      precision: int4
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: prefill
+    input:
+      batch_size: 1
+      input_len:
+      - 4096
+      - 16384
+      - 65536
+      - 102400
+      output_len: 1
+    run_name: kimi_k3_int4_tp_prefill
+  source: kimi-k3-cases.md:444
+- id: kimi_k3_int4_tp_decode
+  ppu:
+    assets:
+      model: MODEL_PATH_INT4
+      tokenizer: MODEL_PATH_INT4
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: 2x 810E (btv1.1)
+  model:
+    base_args:
+    - --dist-init-addr
+    - node0:29500
+    - --nnodes
+    - '2'
+    - --node-rank
+    - '0'
+    - --trust-remote-code
+    - --tp-size
+    - '8'
+    - --pp-size
+    - '4'
+    - --mem-fraction-static
+    - '0.85'
+    - --max-total-tokens
+    - '393216'
+    - --disable-radix-cache
+    - --max-running-requests
+    - '64'
+    - --max-mamba-cache-size
+    - '256'
+    - --mamba-ssm-dtype
+    - float32
+    - --chunked-prefill-size
+    - '256'
+    - --prefill-attention-backend
+    - fa3
+    - --decode-attention-backend
+    - flashmla
+    - --linear-attn-backend
+    - flashkda
+    base_env: {}
+  variants:
+    default:
+      precision: int4
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: decode
+    input:
+      batch_size: 64
+      input_len:
+      - 4096
+      output_len: 1536
+    run_name: kimi_k3_int4_tp_decode
+  source: kimi-k3-cases.md:466
+- id: kimi_k3_int4_ep_prefill
+  ppu:
+    assets:
+      model: MODEL_PATH_INT4
+      tokenizer: MODEL_PATH_INT4
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: 2x 810E (btv1.1)
+  model:
+    base_args:
+    - --dist-init-addr
+    - node0:29500
+    - --nnodes
+    - '2'
+    - --node-rank
+    - '0'
+    - --trust-remote-code
+    - --tp-size
+    - '32'
+    - --ep-size
+    - '32'
+    - --mem-fraction-static
+    - '0.9'
+    - --disable-cuda-graph
+    - --max-running-requests
+    - '1'
+    - --max-mamba-cache-size
+    - '5'
+    - --mamba-ssm-dtype
+    - bfloat16
+    - --prefill-attention-backend
+    - fa3
+    - --decode-attention-backend
+    - flashmla
+    - --linear-attn-backend
+    - flashkda
+    - --moe-a2a-backend
+    - none
+    - --max-total-tokens
+    - '106496'
+    base_env: {}
+  variants:
+    default:
+      precision: int4
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: prefill
+    input:
+      batch_size: 1
+      input_len:
+      - 4096
+      - 16384
+      - 65536
+      - 102400
+      output_len: 1
+    run_name: kimi_k3_int4_ep_prefill
+  source: kimi-k3-cases.md:497
+- id: kimi_k3_int4_ep_decode
+  ppu:
+    assets:
+      model: MODEL_PATH_INT4
+      tokenizer: MODEL_PATH_INT4
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: 2x 810E (btv1.1)
+  model:
+    base_args:
+    - --dist-init-addr
+    - node0:29500
+    - --nnodes
+    - '2'
+    - --node-rank
+    - '0'
+    - --trust-remote-code
+    - --tp-size
+    - '32'
+    - --ep-size
+    - '32'
+    - --mem-fraction-static
+    - '0.96'
+    - --max-total-tokens
+    - '720896'
+    - --disable-radix-cache
+    - --max-running-requests
+    - '128'
+    - --max-mamba-cache-size
+    - '128'
+    - --mamba-ssm-dtype
+    - float32
+    - --chunked-prefill-size
+    - '64'
+    - --prefill-attention-backend
+    - fa3
+    - --decode-attention-backend
+    - flashmla
+    - --linear-attn-backend
+    - flashkda
+    - --moe-a2a-backend
+    - none
+    base_env: {}
+  variants:
+    default:
+      precision: int4
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: decode
+    input:
+      batch_size: 128
+      input_len:
+      - 4096
+      output_len: 1536
+    run_name: kimi_k3_int4_ep_decode
+  source: kimi-k3-cases.md:524
+- id: kimi_k3_int4_pp_prefill
+  ppu:
+    assets:
+      model: MODEL_PATH_INT4
+      tokenizer: MODEL_PATH_INT4
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: 2x 810E (btv1.1)
+  model:
+    base_args:
+    - --dist-init-addr
+    - node0:29500
+    - --nnodes
+    - '2'
+    - --node-rank
+    - '0'
+    - --trust-remote-code
+    - --tp-size
+    - '8'
+    - --pp-size
+    - '4'
+    - --mem-fraction-static
+    - '0.98'
+    - --prefill-attention-backend
+    - fa3
+    - --decode-attention-backend
+    - flashmla
+    - --linear-attn-backend
+    - flashkda
+    - --max-total-tokens
+    - '106496'
+    base_env: {}
+  variants:
+    default:
+      precision: int4
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: prefill
+    input:
+      batch_size: 1
+      input_len:
+      - 4096
+      - 16384
+      - 65536
+      - 102400
+      output_len: 1
+    run_name: kimi_k3_int4_pp_prefill
+  source: kimi-k3-cases.md:556
+- id: kimi_k3_int4_pp_decode
+  ppu:
+    assets:
+      model: MODEL_PATH_INT4
+      tokenizer: MODEL_PATH_INT4
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: 2x 810E (btv1.1)
+  model:
+    base_args:
+    - --dist-init-addr
+    - node0:29500
+    - --nnodes
+    - '2'
+    - --node-rank
+    - '0'
+    - --trust-remote-code
+    - --tp-size
+    - '8'
+    - --pp-size
+    - '4'
+    - --mem-fraction-static
+    - '0.85'
+    - --max-total-tokens
+    - '393216'
+    - --disable-radix-cache
+    - --max-running-requests
+    - '64'
+    - --max-mamba-cache-size
+    - '256'
+    - --mamba-ssm-dtype
+    - float32
+    - --chunked-prefill-size
+    - '256'
+    - --prefill-attention-backend
+    - fa3
+    - --decode-attention-backend
+    - flashmla
+    - --linear-attn-backend
+    - flashkda
+    base_env: {}
+  variants:
+    default:
+      precision: int4
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: decode
+    input:
+      batch_size: 64
+      input_len:
+      - 4096
+      output_len: 1536
+    run_name: kimi_k3_int4_pp_decode
+  source: kimi-k3-cases.md:578
+- id: kimi_k3_mxfp4_fp8_tp_prefill
+  ppu:
+    assets:
+      model: MODEL_PATH_MXFP4_FP8
+      tokenizer: MODEL_PATH_MXFP4_FP8
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: 890P (btv1.5)
+  model:
+    base_args:
+    - --dist-init-addr
+    - node0:29500
+    - --nnodes
+    - '2'
+    - --node-rank
+    - '0'
+    - --trust-remote-code
+    - --tp-size
+    - '8'
+    - --pp-size
+    - '2'
+    - --mem-fraction-static
+    - '0.98'
+    - --prefill-attention-backend
+    - fa3
+    - --decode-attention-backend
+    - flashmla
+    - --linear-attn-backend
+    - flashkda
+    - --moe-runner-backend
+    - deep_gemm
+    - --max-total-tokens
+    - '106496'
+    base_env: {}
+  variants:
+    default:
+      precision: mxfp4-fp8
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: prefill
+    input:
+      batch_size: 1
+      input_len:
+      - 4096
+      - 16384
+      - 65536
+      - 102400
+      output_len: 1
+    run_name: kimi_k3_mxfp4_fp8_tp_prefill
+  source: kimi-k3-cases.md:855
+- id: kimi_k3_mxfp4_fp8_tp_decode
+  ppu:
+    assets:
+      model: MODEL_PATH_MXFP4_FP8
+      tokenizer: MODEL_PATH_MXFP4_FP8
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: "3 890P\uFF08btv1.5\uFF09"
+  model:
+    base_args:
+    - --dist-init-addr
+    - node0:29500
+    - --nnodes
+    - '2'
+    - --node-rank
+    - '0'
+    - --trust-remote-code
+    - --tp-size
+    - '8'
+    - --pp-size
+    - '2'
+    - --mem-fraction-static
+    - '0.98'
+    - --prefill-attention-backend
+    - fa3
+    - --decode-attention-backend
+    - flashmla
+    - --linear-attn-backend
+    - flashkda
+    - --moe-runner-backend
+    - deep_gemm
+    base_env: {}
+  variants:
+    default:
+      precision: mxfp4-fp8
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: decode
+    input:
+      batch_size: 64
+      input_len:
+      - 4096
+      output_len: 1536
+    run_name: kimi_k3_mxfp4_fp8_tp_decode
+  source: kimi-k3-cases.md:878
+- id: kimi_k3_mxfp4_fp8_ep_prefill
+  ppu:
+    assets:
+      model: MODEL_PATH_MXFP4_FP8
+      tokenizer: MODEL_PATH_MXFP4_FP8
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: "3 890P\uFF08btv1.5\uFF09"
+  model:
+    base_args:
+    - --dist-init-addr
+    - node0:29500
+    - --nnodes
+    - '4'
+    - --node-rank
+    - '0'
+    - --trust-remote-code
+    - --tp-size
+    - '32'
+    - --ep-size
+    - '32'
+    - --mem-fraction-static
+    - '0.85'
+    - --prefill-attention-backend
+    - fa3
+    - --decode-attention-backend
+    - flashmla
+    - --linear-attn-backend
+    - flashkda
+    - --moe-a2a-backend
+    - deepep
+    - --moe-runner-backend
+    - deep_gemm
+    - --max-total-tokens
+    - '106496'
+    base_env: {}
+  variants:
+    default:
+      precision: mxfp4-fp8
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: prefill
+    input:
+      batch_size: 1
+      input_len:
+      - 4096
+      - 16384
+      - 65536
+      - 102400
+      output_len: 1
+    run_name: kimi_k3_mxfp4_fp8_ep_prefill
+  source: kimi-k3-cases.md:904
+- id: kimi_k3_mxfp4_fp8_ep_decode
+  ppu:
+    assets:
+      model: MODEL_PATH_MXFP4_FP8
+      tokenizer: MODEL_PATH_MXFP4_FP8
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: "3 890P\uFF08btv1.5\uFF09"
+  model:
+    base_args:
+    - --dist-init-addr
+    - node0:29500
+    - --nnodes
+    - '4'
+    - --node-rank
+    - '0'
+    - --trust-remote-code
+    - --tp-size
+    - '32'
+    - --ep-size
+    - '32'
+    - --mem-fraction-static
+    - '0.85'
+    - --prefill-attention-backend
+    - fa3
+    - --decode-attention-backend
+    - flashmla
+    - --linear-attn-backend
+    - flashkda
+    - --moe-a2a-backend
+    - deepep
+    - --moe-runner-backend
+    - deep_gemm
+    base_env: {}
+  variants:
+    default:
+      precision: mxfp4-fp8
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: decode
+    input:
+      batch_size: 128
+      input_len:
+      - 4096
+      output_len: 1536
+    run_name: kimi_k3_mxfp4_fp8_ep_decode
+  source: kimi-k3-cases.md:928
+- id: kimi_k3_mxfp4_fp8_pp_prefill
+  ppu:
+    assets:
+      model: MODEL_PATH_MXFP4_FP8
+      tokenizer: MODEL_PATH_MXFP4_FP8
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: "3 890P\uFF08btv1.5\uFF09"
+  model:
+    base_args:
+    - --dist-init-addr
+    - node0:29500
+    - --nnodes
+    - '2'
+    - --node-rank
+    - '0'
+    - --trust-remote-code
+    - --tp-size
+    - '8'
+    - --pp-size
+    - '2'
+    - --mem-fraction-static
+    - '0.98'
+    - --prefill-attention-backend
+    - fa3
+    - --decode-attention-backend
+    - flashmla
+    - --linear-attn-backend
+    - flashkda
+    - --moe-runner-backend
+    - deep_gemm
+    - --max-total-tokens
+    - '106496'
+    base_env: {}
+  variants:
+    default:
+      precision: mxfp4-fp8
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: prefill
+    input:
+      batch_size: 1
+      input_len:
+      - 4096
+      - 16384
+      - 65536
+      - 102400
+      output_len: 1
+    run_name: kimi_k3_mxfp4_fp8_pp_prefill
+  source: kimi-k3-cases.md:955
+- id: kimi_k3_mxfp4_fp8_pp_decode
+  ppu:
+    assets:
+      model: MODEL_PATH_MXFP4_FP8
+      tokenizer: MODEL_PATH_MXFP4_FP8
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: "3 890P\uFF08btv1.5\uFF09"
+  model:
+    base_args:
+    - --dist-init-addr
+    - node0:29500
+    - --nnodes
+    - '2'
+    - --node-rank
+    - '0'
+    - --trust-remote-code
+    - --tp-size
+    - '8'
+    - --pp-size
+    - '2'
+    - --mem-fraction-static
+    - '0.98'
+    - --prefill-attention-backend
+    - fa3
+    - --decode-attention-backend
+    - flashmla
+    - --linear-attn-backend
+    - flashkda
+    - --moe-runner-backend
+    - deep_gemm
+    base_env: {}
+  variants:
+    default:
+      precision: mxfp4-fp8
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: decode
+    input:
+      batch_size: 64
+      input_len:
+      - 4096
+      output_len: 1536
+    run_name: kimi_k3_mxfp4_fp8_pp_decode
+  source: kimi-k3-cases.md:978
+- id: kimi_k3_mxfp4_tp_prefill
+  ppu:
+    assets:
+      model: MODEL_PATH_MXFP4
+      tokenizer: MODEL_PATH_MXFP4
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: "3 890P\uFF08btv1.5\uFF09"
+  model:
+    base_args:
+    - --dist-init-addr
+    - node0:29500
+    - --nnodes
+    - '2'
+    - --node-rank
+    - '0'
+    - --trust-remote-code
+    - --tp-size
+    - '8'
+    - --pp-size
+    - '2'
+    - --mem-fraction-static
+    - '0.98'
+    - --prefill-attention-backend
+    - fa3
+    - --decode-attention-backend
+    - flashmla
+    - --linear-attn-backend
+    - flashkda
+    - --moe-runner-backend
+    - deep_gemm
+    - --max-total-tokens
+    - '106496'
+    base_env: {}
+  variants:
+    default:
+      precision: mxfp4
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: prefill
+    input:
+      batch_size: 1
+      input_len:
+      - 4096
+      - 16384
+      - 65536
+      - 102400
+      output_len: 1
+    run_name: kimi_k3_mxfp4_tp_prefill
+  source: kimi-k3-cases.md:1006
+- id: kimi_k3_mxfp4_tp_decode
+  ppu:
+    assets:
+      model: MODEL_PATH_MXFP4
+      tokenizer: MODEL_PATH_MXFP4
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: "3 890P\uFF08btv1.5\uFF09"
+  model:
+    base_args:
+    - --dist-init-addr
+    - node0:29500
+    - --nnodes
+    - '2'
+    - --node-rank
+    - '0'
+    - --trust-remote-code
+    - --tp-size
+    - '8'
+    - --pp-size
+    - '2'
+    - --mem-fraction-static
+    - '0.98'
+    - --prefill-attention-backend
+    - fa3
+    - --decode-attention-backend
+    - flashmla
+    - --linear-attn-backend
+    - flashkda
+    - --moe-runner-backend
+    - deep_gemm
+    base_env: {}
+  variants:
+    default:
+      precision: mxfp4
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: decode
+    input:
+      batch_size: 64
+      input_len:
+      - 4096
+      output_len: 1536
+    run_name: kimi_k3_mxfp4_tp_decode
+  source: kimi-k3-cases.md:1029
+- id: kimi_k3_mxfp4_ep_prefill
+  ppu:
+    assets:
+      model: MODEL_PATH_MXFP4
+      tokenizer: MODEL_PATH_MXFP4
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: "3 890P\uFF08btv1.5\uFF09"
+  model:
+    base_args:
+    - --dist-init-addr
+    - node0:29500
+    - --nnodes
+    - '2'
+    - --node-rank
+    - '0'
+    - --trust-remote-code
+    - --tp-size
+    - '16'
+    - --mem-fraction-static
+    - '0.98'
+    - --prefill-attention-backend
+    - fa3
+    - --decode-attention-backend
+    - flashmla
+    - --linear-attn-backend
+    - flashkda
+    - --moe-runner-backend
+    - deep_gemm
+    - --ep-size
+    - '16'
+    - --moe-a2a-backend
+    - deepep
+    - --max-total-tokens
+    - '106496'
+    base_env: {}
+  variants:
+    default:
+      precision: mxfp4
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: prefill
+    input:
+      batch_size: 1
+      input_len:
+      - 4096
+      - 16384
+      - 65536
+      - 102400
+      output_len: 1
+    run_name: kimi_k3_mxfp4_ep_prefill
+  source: kimi-k3-cases.md:1055
+- id: kimi_k3_mxfp4_ep_decode
+  ppu:
+    assets:
+      model: MODEL_PATH_MXFP4
+      tokenizer: MODEL_PATH_MXFP4
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: "3 890P\uFF08btv1.5\uFF09"
+  model:
+    base_args:
+    - --dist-init-addr
+    - node0:29500
+    - --nnodes
+    - '2'
+    - --node-rank
+    - '0'
+    - --trust-remote-code
+    - --tp-size
+    - '16'
+    - --mem-fraction-static
+    - '0.98'
+    - --prefill-attention-backend
+    - fa3
+    - --decode-attention-backend
+    - flashmla
+    - --linear-attn-backend
+    - flashkda
+    - --moe-runner-backend
+    - deep_gemm
+    - --ep-size
+    - '16'
+    - --moe-a2a-backend
+    - deepep
+    base_env: {}
+  variants:
+    default:
+      precision: mxfp4
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: decode
+    input:
+      batch_size: 128
+      input_len:
+      - 4096
+      output_len: 1536
+    run_name: kimi_k3_mxfp4_ep_decode
+  source: kimi-k3-cases.md:1079
+- id: kimi_k3_mxfp4_pp_prefill
+  ppu:
+    assets:
+      model: MODEL_PATH_MXFP4
+      tokenizer: MODEL_PATH_MXFP4
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: "3 890P\uFF08btv1.5\uFF09"
+  model:
+    base_args:
+    - --dist-init-addr
+    - node0:29500
+    - --nnodes
+    - '2'
+    - --node-rank
+    - '0'
+    - --trust-remote-code
+    - --tp-size
+    - '4'
+    - --pp-size
+    - '4'
+    - --mem-fraction-static
+    - '0.98'
+    - --prefill-attention-backend
+    - fa3
+    - --decode-attention-backend
+    - flashmla
+    - --linear-attn-backend
+    - flashkda
+    - --moe-runner-backend
+    - deep_gemm
+    - --max-total-tokens
+    - '106496'
+    base_env: {}
+  variants:
+    default:
+      precision: mxfp4
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: prefill
+    input:
+      batch_size: 1
+      input_len:
+      - 4096
+      - 16384
+      - 65536
+      - 102400
+      output_len: 1
+    run_name: kimi_k3_mxfp4_pp_prefill
+  source: kimi-k3-cases.md:1106
+- id: kimi_k3_mxfp4_pp_decode
+  ppu:
+    assets:
+      model: MODEL_PATH_MXFP4
+      tokenizer: MODEL_PATH_MXFP4
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: "3 890P\uFF08btv1.5\uFF09"
+  model:
+    base_args:
+    - --dist-init-addr
+    - node0:29500
+    - --nnodes
+    - '2'
+    - --node-rank
+    - '0'
+    - --trust-remote-code
+    - --tp-size
+    - '4'
+    - --pp-size
+    - '4'
+    - --mem-fraction-static
+    - '0.98'
+    - --prefill-attention-backend
+    - fa3
+    - --decode-attention-backend
+    - flashmla
+    - --linear-attn-backend
+    - flashkda
+    - --moe-runner-backend
+    - deep_gemm
+    base_env: {}
+  variants:
+    default:
+      precision: mxfp4
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: decode
+    input:
+      batch_size: 64
+      input_len:
+      - 4096
+      output_len: 1536
+    run_name: kimi_k3_mxfp4_pp_decode
+  source: kimi-k3-cases.md:1129

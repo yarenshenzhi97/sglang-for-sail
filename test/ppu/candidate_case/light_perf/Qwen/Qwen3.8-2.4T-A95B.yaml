@@ -1,0 +1,602 @@
+schema_version: ppu-serving/v1
+ppu:
+  framework: sglang
+  visibility: candidate
+model:
+  model_id: Qwen3.8-2.4T-A95B
+light_performance_cases:
+- id: qwen3_8_2_4t_a95b_w8a8_int8_tp32_prefill
+  ppu:
+    assets:
+      model: MODEL_PATH_W8A8_INT8
+      tokenizer: MODEL_PATH_W8A8_INT8
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: 810E (btv1.1)
+  model:
+    base_args:
+    - --dist-init-addr
+    - node0:29500
+    - --nnodes
+    - '2'
+    - --node-rank
+    - '0'
+    - --trust-remote-code
+    - --tp-size
+    - '32'
+    - --dp-size
+    - '2'
+    - --enable-dp-attention
+    - --quantization
+    - w8a8_int8
+    - --page-size
+    - '64'
+    - --attention-backend
+    - fa3
+    - --disable-custom-all-reduce
+    - --disable-shared-experts-fusion
+    - --mem-fraction-static
+    - '0.9'
+    - --max-total-tokens
+    - '106496'
+    - --disable-cuda-graph
+    - --max-running-requests
+    - '2'
+    - --max-mamba-cache-size
+    - '10'
+    - --mamba-ssm-dtype
+    - bfloat16
+    base_env:
+      HGGC_EMBEDDED_COPY_THRESHOLD: '0x10000'
+      SGLANG_ALLOW_OVERWRITE_LONGER_CONTEXT_LEN: '1'
+      SGLANG_LOG_FORWARD_ITERS: 'True'
+  variants:
+    default:
+      precision: w8a8-int8
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: prefill
+    input:
+      batch_size: 1
+      input_len:
+      - 4096
+      - 16384
+      - 65536
+      - 102400
+      output_len: 1
+    run_name: qwen3_8_2_4t_a95b_w8a8_int8_tp32_prefill
+  source: qwen3.8-2.4t-a95b-cases.md:304
+- id: qwen3_8_2_4t_a95b_w8a8_int8_tp32_decode
+  ppu:
+    assets:
+      model: MODEL_PATH_W8A8_INT8
+      tokenizer: MODEL_PATH_W8A8_INT8
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: 2x 810E (btv1.1)
+  model:
+    base_args:
+    - --dist-init-addr
+    - node0:29500
+    - --nnodes
+    - '2'
+    - --node-rank
+    - '0'
+    - --trust-remote-code
+    - --tp-size
+    - '32'
+    - --dp-size
+    - '2'
+    - --enable-dp-attention
+    - --quantization
+    - w8a8_int8
+    - --page-size
+    - '64'
+    - --attention-backend
+    - fa3
+    - --disable-custom-all-reduce
+    - --disable-shared-experts-fusion
+    - --mem-fraction-static
+    - '0.96'
+    - --cuda-graph-backend-prefill
+    - disabled
+    - --disable-cuda-graph
+    - --max-total-tokens
+    - '360448'
+    - --disable-radix-cache
+    - --max-running-requests
+    - '128'
+    - --max-mamba-cache-size
+    - '128'
+    - --mamba-ssm-dtype
+    - bfloat16
+    - --chunked-prefill-size
+    - '256'
+    base_env:
+      HGGC_EMBEDDED_COPY_THRESHOLD: '0x10000'
+      SGLANG_ALLOW_OVERWRITE_LONGER_CONTEXT_LEN: '1'
+      SGLANG_LOG_FORWARD_ITERS: 'True'
+  variants:
+    default:
+      precision: w8a8-int8
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: decode
+    input:
+      batch_size: 64
+      input_len:
+      - 4096
+      output_len: 1536
+    run_name: qwen3_8_2_4t_a95b_w8a8_int8_tp32_decode
+  source: qwen3.8-2.4t-a95b-cases.md:336
+- id: qwen3_8_2_4t_a95b_w4a8_int8_tp32_prefill
+  ppu:
+    assets:
+      model: MODEL_PATH_W4A8_INT8
+      tokenizer: MODEL_PATH_W4A8_INT8
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: 2x 810E (btv1.1)
+  model:
+    base_args:
+    - --dist-init-addr
+    - node0:29500
+    - --nnodes
+    - '2'
+    - --node-rank
+    - '0'
+    - --trust-remote-code
+    - --tp-size
+    - '32'
+    - --dp-size
+    - '2'
+    - --enable-dp-attention
+    - --moe-dense-tp-size
+    - '1'
+    - --moe-a2a-backend
+    - none
+    - --moe-runner-backend
+    - deep_gemm
+    - --page-size
+    - '64'
+    - --attention-backend
+    - fa3
+    - --disable-custom-all-reduce
+    - --disable-shared-experts-fusion
+    - --mem-fraction-static
+    - '0.85'
+    - --disable-cuda-graph
+    - --max-running-requests
+    - '2'
+    - --max-mamba-cache-size
+    - '10'
+    - --mamba-ssm-dtype
+    - bfloat16
+    - --max-total-tokens
+    - '106496'
+    base_env:
+      DG_USE_MOE_DYNAMIC_TILE: '1'
+      HGGC_EMBEDDED_COPY_THRESHOLD: '0x10000'
+      SGLANG_SAIL_DEEPEP_RECV_HOOK: '0'
+  variants:
+    default:
+      precision: w4a8-int8
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: prefill
+    input:
+      batch_size: 1
+      input_len:
+      - 4096
+      - 16384
+      - 65536
+      - 102400
+      output_len: 1
+    run_name: qwen3_8_2_4t_a95b_w4a8_int8_tp32_prefill
+  source: qwen3.8-2.4t-a95b-cases.md:377
+- id: qwen3_8_2_4t_a95b_w4a8_int8_tp32_decode
+  ppu:
+    assets:
+      model: MODEL_PATH_W4A8_INT8
+      tokenizer: MODEL_PATH_W4A8_INT8
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: 2x 810E (btv1.1)
+  model:
+    base_args:
+    - --dist-init-addr
+    - node0:29500
+    - --nnodes
+    - '2'
+    - --node-rank
+    - '0'
+    - --trust-remote-code
+    - --tp-size
+    - '32'
+    - --dp-size
+    - '2'
+    - --enable-dp-attention
+    - --moe-dense-tp-size
+    - '1'
+    - --moe-a2a-backend
+    - none
+    - --moe-runner-backend
+    - deep_gemm
+    - --page-size
+    - '64'
+    - --attention-backend
+    - fa3
+    - --disable-custom-all-reduce
+    - --disable-shared-experts-fusion
+    - --mem-fraction-static
+    - '0.95'
+    - --cuda-graph-backend-prefill
+    - disabled
+    - --disable-cuda-graph
+    - --max-total-tokens
+    - '360448'
+    - --disable-radix-cache
+    - --max-running-requests
+    - '128'
+    - --max-mamba-cache-size
+    - '128'
+    - --mamba-ssm-dtype
+    - bfloat16
+    - --chunked-prefill-size
+    - '256'
+    base_env:
+      DG_USE_MOE_DYNAMIC_TILE: '1'
+      HGGC_EMBEDDED_COPY_THRESHOLD: '0x10000'
+      SGLANG_SAIL_DEEPEP_RECV_HOOK: '0'
+  variants:
+    default:
+      precision: w4a8-int8
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: decode
+    input:
+      batch_size: 64
+      input_len:
+      - 4096
+      output_len: 1536
+    run_name: qwen3_8_2_4t_a95b_w4a8_int8_tp32_decode
+  source: qwen3.8-2.4t-a95b-cases.md:411
+- id: qwen3_8_2_4t_a95b_fp8_tp32_ep32_prefill
+  ppu:
+    assets:
+      model: MODEL_PATH_FP8
+      tokenizer: MODEL_PATH_FP8
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: 890P (btv1.5)
+  model:
+    base_args:
+    - --dist-init-addr
+    - node0:29500
+    - --nnodes
+    - '4'
+    - --node-rank
+    - '0'
+    - --trust-remote-code
+    - --tp-size
+    - '32'
+    - --ep-size
+    - '32'
+    - --moe-dense-tp-size
+    - '1'
+    - --moe-a2a-backend
+    - deepep
+    - --deepep-mode
+    - auto
+    - --moe-runner-backend
+    - deep_gemm
+    - --mem-fraction-static
+    - '0.7'
+    - --page-size
+    - '64'
+    - --attention-backend
+    - fa3
+    - --disable-shared-experts-fusion
+    - --max-mamba-cache-size
+    - '128'
+    - --max-total-tokens
+    - '106496'
+    base_env:
+      DG_USE_MOE_DYNAMIC_TILE: '1'
+      HGGC_EMBEDDED_COPY_THRESHOLD: '0x10000'
+      SGLANG_DEEPEP_NUM_MAX_DISPATCH_TOKENS_PER_RANK: '256'
+      SGLANG_SAIL_DEEPEP_RECV_HOOK: '0'
+      SGLANG_WARMUP_TIMEOUT: '3600'
+  variants:
+    default:
+      precision: fp8
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: prefill
+    input:
+      batch_size: 1
+      input_len:
+      - 4096
+      - 16384
+      - 65536
+      - 102400
+      output_len: 1
+    run_name: qwen3_8_2_4t_a95b_fp8_tp32_ep32_prefill
+  source: qwen3.8-2.4t-a95b-cases.md:1225
+- id: qwen3_8_2_4t_a95b_fp8_tp32_ep32_decode
+  ppu:
+    assets:
+      model: MODEL_PATH_FP8
+      tokenizer: MODEL_PATH_FP8
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: "3 890P\uFF08btv1.5\uFF09"
+  model:
+    base_args:
+    - --dist-init-addr
+    - node0:29500
+    - --nnodes
+    - '4'
+    - --node-rank
+    - '0'
+    - --trust-remote-code
+    - --tp-size
+    - '32'
+    - --ep-size
+    - '32'
+    - --moe-dense-tp-size
+    - '1'
+    - --moe-a2a-backend
+    - deepep
+    - --deepep-mode
+    - auto
+    - --moe-runner-backend
+    - deep_gemm
+    - --mem-fraction-static
+    - '0.7'
+    - --page-size
+    - '64'
+    - --attention-backend
+    - fa3
+    - --disable-shared-experts-fusion
+    - --max-mamba-cache-size
+    - '128'
+    base_env:
+      DG_USE_MOE_DYNAMIC_TILE: '1'
+      HGGC_EMBEDDED_COPY_THRESHOLD: '0x10000'
+      SGLANG_DEEPEP_NUM_MAX_DISPATCH_TOKENS_PER_RANK: '256'
+      SGLANG_SAIL_DEEPEP_RECV_HOOK: '0'
+      SGLANG_WARMUP_TIMEOUT: '3600'
+  variants:
+    default:
+      precision: fp8
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: decode
+    input:
+      batch_size: 128
+      input_len:
+      - 4096
+      output_len: 1536
+    run_name: qwen3_8_2_4t_a95b_fp8_tp32_ep32_decode
+  source: qwen3.8-2.4t-a95b-cases.md:1257
+- id: qwen3_8_2_4t_a95b_fp8_tp8_pp4_prefill
+  ppu:
+    assets:
+      model: MODEL_PATH_FP8
+      tokenizer: MODEL_PATH_FP8
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: "3 890P\uFF08btv1.5\uFF09"
+  model:
+    base_args:
+    - --dist-init-addr
+    - node0:29500
+    - --nnodes
+    - '4'
+    - --node-rank
+    - '0'
+    - --trust-remote-code
+    - --tp-size
+    - '8'
+    - --pp-size
+    - '4'
+    - --mem-fraction-static
+    - '0.7'
+    - --page-size
+    - '64'
+    - --attention-backend
+    - fa3
+    - --disable-shared-experts-fusion
+    - --max-mamba-cache-size
+    - '64'
+    - --max-total-tokens
+    - '106496'
+    base_env:
+      DG_USE_MOE_DYNAMIC_TILE: '1'
+      HGGC_EMBEDDED_COPY_THRESHOLD: '0x10000'
+      SGLANG_DEEPEP_NUM_MAX_DISPATCH_TOKENS_PER_RANK: '256'
+      SGLANG_SAIL_DEEPEP_RECV_HOOK: '0'
+      SGLANG_WARMUP_TIMEOUT: '3600'
+  variants:
+    default:
+      precision: fp8
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: prefill
+    input:
+      batch_size: 1
+      input_len:
+      - 4096
+      - 16384
+      - 65536
+      - 102400
+      output_len: 1
+    run_name: qwen3_8_2_4t_a95b_fp8_tp8_pp4_prefill
+  source: qwen3.8-2.4t-a95b-cases.md:1292
+- id: qwen3_8_2_4t_a95b_fp8_tp8_pp4_decode
+  ppu:
+    assets:
+      model: MODEL_PATH_FP8
+      tokenizer: MODEL_PATH_FP8
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: "3 890P\uFF08btv1.5\uFF09"
+  model:
+    base_args:
+    - --dist-init-addr
+    - node0:29500
+    - --nnodes
+    - '4'
+    - --node-rank
+    - '0'
+    - --trust-remote-code
+    - --tp-size
+    - '8'
+    - --pp-size
+    - '4'
+    - --mem-fraction-static
+    - '0.7'
+    - --page-size
+    - '64'
+    - --attention-backend
+    - fa3
+    - --disable-shared-experts-fusion
+    - --max-mamba-cache-size
+    - '64'
+    base_env:
+      DG_USE_MOE_DYNAMIC_TILE: '1'
+      HGGC_EMBEDDED_COPY_THRESHOLD: '0x10000'
+      SGLANG_DEEPEP_NUM_MAX_DISPATCH_TOKENS_PER_RANK: '256'
+      SGLANG_SAIL_DEEPEP_RECV_HOOK: '0'
+      SGLANG_WARMUP_TIMEOUT: '3600'
+  variants:
+    default:
+      precision: fp8
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: decode
+    input:
+      batch_size: 64
+      input_len:
+      - 4096
+      output_len: 1536
+    run_name: qwen3_8_2_4t_a95b_fp8_tp8_pp4_decode
+  source: qwen3.8-2.4t-a95b-cases.md:1320
+- id: qwen3_8_2_4t_a95b_mxfp4_fp8_tp16_prefill
+  ppu:
+    assets:
+      model: MODEL_PATH_MXFP4_FP8
+      tokenizer: MODEL_PATH_MXFP4_FP8
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: "3 890P\uFF08btv1.5\uFF09"
+  model:
+    base_args:
+    - --dist-init-addr
+    - node0:29500
+    - --nnodes
+    - '2'
+    - --node-rank
+    - '0'
+    - --trust-remote-code
+    - --tp-size
+    - '16'
+    - --mem-fraction-static
+    - '0.9'
+    - --page-size
+    - '64'
+    - --attention-backend
+    - fa3
+    - --disable-shared-experts-fusion
+    - --disable-custom-all-reduce
+    - --moe-dense-tp-size
+    - '1'
+    - --max-mamba-cache-size
+    - '64'
+    - --weight-loader-prefetch-checkpoints
+    - --weight-loader-prefetch-num-threads
+    - '16'
+    - --max-total-tokens
+    - '106496'
+    base_env:
+      HGGC_EMBEDDED_COPY_THRESHOLD: '0x10000'
+      SGLANG_ALLOW_OVERWRITE_LONGER_CONTEXT_LEN: '1'
+      SGLANG_LOG_FORWARD_ITERS: '1'
+  variants:
+    default:
+      precision: mxfp4-fp8
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: prefill
+    input:
+      batch_size: 1
+      input_len:
+      - 4096
+      - 16384
+      - 65536
+      - 102400
+      output_len: 1
+    run_name: qwen3_8_2_4t_a95b_mxfp4_fp8_tp16_prefill
+  source: qwen3.8-2.4t-a95b-cases.md:1353
+- id: qwen3_8_2_4t_a95b_mxfp4_fp8_tp16_decode
+  ppu:
+    assets:
+      model: MODEL_PATH_MXFP4_FP8
+      tokenizer: MODEL_PATH_MXFP4_FP8
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: "3 890P\uFF08btv1.5\uFF09"
+  model:
+    base_args:
+    - --dist-init-addr
+    - node0:29500
+    - --nnodes
+    - '2'
+    - --node-rank
+    - '0'
+    - --trust-remote-code
+    - --tp-size
+    - '16'
+    - --mem-fraction-static
+    - '0.9'
+    - --page-size
+    - '64'
+    - --attention-backend
+    - fa3
+    - --disable-shared-experts-fusion
+    - --disable-custom-all-reduce
+    - --moe-dense-tp-size
+    - '1'
+    - --max-mamba-cache-size
+    - '64'
+    - --weight-loader-prefetch-checkpoints
+    - --weight-loader-prefetch-num-threads
+    - '16'
+    base_env:
+      HGGC_EMBEDDED_COPY_THRESHOLD: '0x10000'
+      SGLANG_ALLOW_OVERWRITE_LONGER_CONTEXT_LEN: '1'
+      SGLANG_LOG_FORWARD_ITERS: '1'
+  variants:
+    default:
+      precision: mxfp4-fp8
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: decode
+    input:
+      batch_size: 64
+      input_len:
+      - 4096
+      output_len: 1536
+    run_name: qwen3_8_2_4t_a95b_mxfp4_fp8_tp16_decode
+  source: qwen3.8-2.4t-a95b-cases.md:1382

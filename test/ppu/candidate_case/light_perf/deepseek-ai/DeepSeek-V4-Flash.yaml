@@ -1,0 +1,258 @@
+schema_version: ppu-serving/v1
+ppu:
+  framework: sglang
+  visibility: candidate
+model:
+  model_id: DeepSeek-V4-Flash-0731
+light_performance_cases:
+- id: dpsk_v4_flash_w8a8_int8_tp_prefill
+  ppu:
+    assets:
+      model: MODEL_PATH_W8A8_INT8
+      tokenizer: MODEL_PATH_W8A8_INT8
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: 810E (btv1.1)
+  model:
+    base_args:
+    - --trust-remote-code
+    - --tp-size
+    - '8'
+    - --mem-fraction-static
+    - '0.8'
+    - --enable-prefill-cp
+    - --cp-strategy
+    - interleave
+    - --disable-cuda-graph
+    - --disable-radix-cache
+    - --max-total-tokens
+    - '106496'
+    - --swa-full-tokens-ratio
+    - '1.0'
+    - --chunked-prefill-size
+    - '19968'
+    - --page-size
+    - '64'
+    - --disable-shared-experts-fusion
+    - --disable-custom-all-reduce
+    - --quantization
+    - w8a8_int8
+    base_env: {}
+  variants:
+    default:
+      precision: w8a8-int8
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: prefill
+    input:
+      batch_size: 1
+      input_len:
+      - 4096
+      - 16384
+      - 65536
+      - 102400
+      output_len: 1
+    run_name: dpsk_v4_flash_w8a8_int8_tp_prefill
+  source: dpsk-v4-flash-cases.md:272
+- id: dpsk_v4_flash_w8a8_int8_tp_decode
+  ppu:
+    assets:
+      model: MODEL_PATH_W8A8_INT8
+      tokenizer: MODEL_PATH_W8A8_INT8
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: 2x 810E (btv1.1)
+  model:
+    base_args:
+    - --trust-remote-code
+    - --tp-size
+    - '8'
+    - --mem-fraction-static
+    - '0.8'
+    - --disable-shared-experts-fusion
+    - --disable-custom-all-reduce
+    - --quantization
+    - w8a8_int8
+    base_env: {}
+  variants:
+    default:
+      precision: w8a8-int8
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: decode
+    input:
+      batch_size: 16
+      input_len:
+      - 4096
+      output_len: 1536
+    run_name: dpsk_v4_flash_w8a8_int8_tp_decode
+  source: dpsk-v4-flash-cases.md:297
+- id: dpsk_v4_flash_w4a8_int8_tp_prefill
+  ppu:
+    assets:
+      model: MODEL_PATH_W4A8_INT8
+      tokenizer: MODEL_PATH_W4A8_INT8
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: 2x 810E (btv1.1)
+  model:
+    base_args:
+    - --trust-remote-code
+    - --tp-size
+    - '4'
+    - --mem-fraction-static
+    - '0.8'
+    - --enable-prefill-cp
+    - --cp-strategy
+    - interleave
+    - --disable-cuda-graph
+    - --disable-radix-cache
+    - --max-total-tokens
+    - '106496'
+    - --swa-full-tokens-ratio
+    - '1.0'
+    - --chunked-prefill-size
+    - '19968'
+    - --page-size
+    - '64'
+    - --disable-shared-experts-fusion
+    - --disable-custom-all-reduce
+    base_env: {}
+  variants:
+    default:
+      precision: w4a8-int8
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: prefill
+    input:
+      batch_size: 1
+      input_len:
+      - 4096
+      - 16384
+      - 65536
+      - 102400
+      output_len: 1
+    run_name: dpsk_v4_flash_w4a8_int8_tp_prefill
+  source: dpsk-v4-flash-cases.md:320
+- id: dpsk_v4_flash_w4a8_int8_tp_decode
+  ppu:
+    assets:
+      model: MODEL_PATH_W4A8_INT8
+      tokenizer: MODEL_PATH_W4A8_INT8
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: 2x 810E (btv1.1)
+  model:
+    base_args:
+    - --trust-remote-code
+    - --tp-size
+    - '4'
+    - --mem-fraction-static
+    - '0.8'
+    - --disable-shared-experts-fusion
+    - --disable-custom-all-reduce
+    base_env: {}
+  variants:
+    default:
+      precision: w4a8-int8
+  benchmark:
+    engine: sglang.benchmark.one_batch
+    workload: decode
+    input:
+      batch_size: 16
+      input_len:
+      - 4096
+      output_len: 1536
+    run_name: dpsk_v4_flash_w4a8_int8_tp_decode
+  source: dpsk-v4-flash-cases.md:344
+- id: dpsk_v4_flash_mxfp4_fp8_tp_prefill
+  ppu:
+    assets:
+      model: MODEL_PATH_MXFP4_FP8
+      tokenizer: MODEL_PATH_MXFP4_FP8
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: 890P (btv1.5)
+  model:
+    base_args:
+    - --trust-remote-code
+    - --tp-size
+    - '4'
+    - --mem-fraction-static
+    - '0.85'
+    - --enable-deepseek-v4-fp4-indexer
+    - --page-size
+    - '64'
+    - --disable-radix-cache
+    - --chunked-prefill-size
+    - '8192'
+    - --cuda-graph-max-bs-decode
+    - '1'
+    - --disable-custom-all-reduce
+    - --disable-shared-experts-fusion
+    base_env: {}
+  variants:
+    default:
+      precision: mxfp4-fp8
+  benchmark:
+    engine: sglang.benchmark.one_batch_server
+    workload: prefill
+    input:
+      batch_size: 1
+      input_len:
+      - 4096
+      - 16384
+      - 65536
+      - 102400
+      output_len: 1
+    run_name: dpsk_v4_flash_mxfp4_fp8_tp_prefill
+    dataset:
+      name: random-ids
+  source: dpsk-v4-flash-cases.md:504
+- id: dpsk_v4_flash_mxfp4_fp8_tp_decode
+  ppu:
+    assets:
+      model: MODEL_PATH_MXFP4_FP8
+      tokenizer: MODEL_PATH_MXFP4_FP8
+    topology:
+      kind: single_node
+      nodes: 1
+    platform: "3 890P\uFF08btv1.5\uFF09"
+  model:
+    base_args:
+    - --trust-remote-code
+    - --tp-size
+    - '4'
+    - --mem-fraction-static
+    - '0.85'
+    - --enable-deepseek-v4-fp4-indexer
+    - --page-size
+    - '64'
+    - --disable-radix-cache
+    - --chunked-prefill-size
+    - '8192'
+    - --cuda-graph-max-bs-decode
+    - '64'
+    - --disable-custom-all-reduce
+    - --disable-shared-experts-fusion
+    base_env: {}
+  variants:
+    default:
+      precision: mxfp4-fp8
+  benchmark:
+    engine: sglang.benchmark.one_batch_server
+    workload: decode
+    input:
+      batch_size: 64
+      input_len:
+      - 4096
+      output_len: 1536
+    run_name: dpsk_v4_flash_mxfp4_fp8_tp_decode
+    dataset:
+      name: random-ids
+  source: dpsk-v4-flash-cases.md:526
