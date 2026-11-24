@@ -96,7 +96,11 @@ def main():
         from recipe_cluster_diagnostics import publish_recent_failures
 
         print("PPU cluster private configuration verified")
-        publish_recent_failures(retained, int(os.environ["GITHUB_RUN_ID"]))
+        publish_recent_failures(
+            retained,
+            int(os.environ["GITHUB_RUN_ID"]),
+            os.environ.get("PPU_CI_MODEL_FILTER", ""),
+        )
         return
     os.execvpe(
         "bash",
